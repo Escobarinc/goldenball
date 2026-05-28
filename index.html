@@ -3,781 +3,715 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GoldenBall Pro</title>
+<title>GoldenBall</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
-  --gold:#F5A623;--gold-dark:#C8841A;--gold-glow:rgba(245,166,35,0.2);
-  --bg:#111;--bg2:#1A1A1A;--bg3:#222;--bg4:#2A2A2A;
-  --text:#FFF;--text2:#999;--text3:#555;
+  --gold:#F5A623;--gold-dark:#C8841A;
+  --bg:#0F0F0F;--bg2:#1A1A1A;--bg3:#242424;--bg4:#2E2E2E;
+  --text:#FFF;--text2:#AAA;--text3:#666;
   --green:#2ECC71;--red:#E74C3C;--live:#FF4444;
-  --nav-h:72px;
+  --nav:68px;
 }
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow:hidden}
-.app{display:flex;flex-direction:column;height:100vh;max-width:430px;margin:0 auto;position:relative}
-
-/* STATUS */
-.status-bar{display:flex;justify-content:space-between;align-items:center;padding:12px 20px 0;font-size:12px;font-weight:600;flex-shrink:0}
-.status-time{font-size:15px;font-weight:700}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh;width:100%}
 
 /* HEADER */
-.header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px 10px;flex-shrink:0}
-.logo{display:flex;align-items:center;gap:8px;font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--gold)}
-.logo-ball{width:32px;height:32px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px}
-.wallet{background:var(--bg3);border:1px solid rgba(245,166,35,0.3);border-radius:20px;padding:6px 14px;display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:var(--gold);cursor:pointer}
-
-/* SPORT TABS */
-.sport-tabs{display:flex;gap:8px;padding:0 20px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;margin-bottom:6px}
-.sport-tabs::-webkit-scrollbar{display:none}
-.sport-tab{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;opacity:0.5;transition:all 0.2s}
-.sport-tab.active{opacity:1}
-.sport-icon{width:52px;height:52px;background:var(--bg3);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;border:2px solid transparent;transition:all 0.2s}
-.sport-tab.active .sport-icon{border-color:var(--gold);background:rgba(245,166,35,0.12)}
-.sport-label{font-size:10px;font-weight:600;color:var(--text2)}
-.sport-tab.active .sport-label{color:var(--gold)}
+.hdr{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 12px;flex-shrink:0;padding-top:max(16px,env(safe-area-inset-top))}
+.logo{display:flex;align-items:center;gap:8px;font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;color:var(--gold)}
+.logo-ball{width:34px;height:34px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.wallet-pill{background:var(--bg3);border:1px solid rgba(245,166,35,0.25);border-radius:20px;padding:7px 14px;display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:var(--gold);cursor:pointer}
+.avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-dark));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#111}
 
 /* FILTER TABS */
-.filter-tabs{display:flex;gap:6px;padding:8px 20px;flex-shrink:0}
-.filter-tab{padding:6px 14px;border-radius:16px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;border:1.5px solid transparent;transition:all 0.2s}
-.filter-tab.active{background:var(--gold);color:#111}
-.filter-tab.live-tab{border-color:var(--live);color:var(--live);display:flex;align-items:center;gap:4px}
-.ldot{width:6px;height:6px;background:var(--live);border-radius:50%;animation:blink 1.2s infinite}
+.filter-row{display:flex;gap:8px;padding:0 20px 10px;flex-shrink:0}
+.ftab{padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;border:1.5px solid transparent;transition:all 0.2s}
+.ftab.active{background:var(--gold);color:#111;border-color:var(--gold)}
+.ftab.live{border-color:var(--live);color:var(--live);display:flex;align-items:center;gap:5px}
+.ftab.live.active{background:var(--live);color:#fff;border-color:var(--live)}
+.ldot{width:6px;height:6px;background:currentColor;border-radius:50%;animation:blink 1.2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
 
-/* SCREENS */
-.screen{flex:1;overflow-y:auto;scrollbar-width:none;padding-bottom:calc(var(--nav-h) + 8px)}
-.screen::-webkit-scrollbar{display:none}
-.screen{display:none}
-.screen.active{display:block}
+/* SCROLL */
+.scroll{flex:1;overflow-y:auto;scrollbar-width:none;padding-bottom:calc(var(--nav) + 12px)}
+.scroll::-webkit-scrollbar{display:none}
+.scroll{display:none}
+.scroll.active{display:block}
 
-/* LOADING */
-.loading{text-align:center;padding:40px 20px;color:var(--text3)}
-.spinner{width:36px;height:36px;border:3px solid var(--bg3);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
-@keyframes spin{to{transform:rotate(360deg)}}
+/* FEATURED */
+.featured{margin:0 16px 12px;background:linear-gradient(145deg,#1E1A0E,#1A1A1A);border-radius:20px;padding:20px;border:1px solid rgba(245,166,35,0.2);position:relative;overflow:hidden}
+.featured::before{content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;background:radial-gradient(circle,rgba(245,166,35,0.1),transparent 70%);pointer-events:none}
+.feat-label{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--live);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px}
+.feat-teams{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.feat-team{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1}
+.feat-flag{font-size:40px;line-height:1}
+.feat-name{font-size:13px;font-weight:600;color:var(--text2)}
+.feat-score-block{text-align:center}
+.feat-score{font-family:'Bebas Neue',sans-serif;font-size:58px;line-height:1;letter-spacing:3px}
+.feat-time{font-size:13px;color:var(--gold);font-weight:600;margin-top:4px}
+.feat-odds{display:flex;gap:8px}
+.feat-odd{flex:1;background:var(--bg3);border-radius:12px;padding:12px;text-align:center;cursor:pointer;transition:all 0.2s;border:1.5px solid transparent}
+.feat-odd:hover,.feat-odd.sel{border-color:var(--gold);background:rgba(245,166,35,0.1)}
+.fo-label{font-size:10px;color:var(--text3);margin-bottom:3px}
+.fo-val{font-size:17px;font-weight:700;color:var(--gold)}
+
+/* AI BADGE */
+.ai-badge{margin:0 16px 14px;background:linear-gradient(135deg,rgba(245,166,35,0.12),rgba(245,166,35,0.04));border:1px solid rgba(245,166,35,0.25);border-radius:16px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.ai-left{display:flex;align-items:center;gap:12px}
+.ai-icon{width:40px;height:40px;background:var(--gold);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.ai-sub{font-size:11px;color:var(--text3);margin-bottom:2px}
+.ai-title{font-size:15px;font-weight:700}
+.ai-conf{text-align:right}
+.ai-pct{font-family:'Bebas Neue',sans-serif;font-size:38px;color:var(--gold);line-height:1}
+.ai-conf-label{font-size:10px;color:var(--text3)}
+
+/* SPORT SCROLL */
+.sec-head{display:flex;justify-content:space-between;align-items:center;padding:4px 20px 10px}
+.sec-head h3{font-size:17px;font-weight:700}
+.see-all{font-size:12px;color:var(--gold);font-weight:600;cursor:pointer}
+.sport-row{display:flex;gap:10px;padding:0 20px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px}
+.sport-row::-webkit-scrollbar{display:none}
+.sp{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer}
+.sp-icon{width:58px;height:58px;background:var(--bg3);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;border:2px solid transparent;transition:all 0.2s}
+.sp.active .sp-icon{border-color:var(--gold);background:rgba(245,166,35,0.1)}
+.sp-label{font-size:11px;color:var(--text3);font-weight:500;transition:all 0.2s}
+.sp.active .sp-label{color:var(--gold);font-weight:700}
+
+/* QUICK STATS */
+.stats-row{display:flex;gap:10px;padding:0 16px;margin-bottom:14px}
+.qstat{flex:1;background:var(--bg2);border-radius:14px;padding:14px;border:1px solid rgba(255,255,255,0.04)}
+.qs-label{font-size:11px;color:var(--text3);margin-bottom:5px}
+.qs-val{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--gold);line-height:1}
+.qs-sub{font-size:11px;color:var(--green);margin-top:3px}
 
 /* MATCH CARD */
-.match-card{margin:0 16px 10px;background:var(--bg2);border-radius:16px;padding:16px;cursor:pointer;transition:all 0.2s;border:1px solid rgba(255,255,255,0.04);animation:fadeUp 0.3s ease both}
-.match-card:active{transform:scale(0.98)}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.mc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.mc{margin:0 16px 10px;background:var(--bg2);border-radius:16px;padding:16px;cursor:pointer;border:1px solid rgba(255,255,255,0.04);transition:all 0.2s;animation:fadeUp 0.3s ease both}
+.mc:active{transform:scale(0.98);opacity:0.9}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.mc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .mc-league{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px}
-.mc-time{font-size:11px;padding:3px 8px;border-radius:6px;background:var(--bg3);color:var(--text3)}
-.mc-time.live{color:var(--live);border:1px solid rgba(255,68,68,0.3);background:rgba(255,68,68,0.08)}
+.mc-badge{font-size:11px;padding:3px 8px;border-radius:6px;background:var(--bg3);color:var(--text3)}
+.mc-badge.live{color:var(--live);border:1px solid rgba(255,68,68,0.3);background:rgba(255,68,68,0.08);display:flex;align-items:center;gap:4px}
 .mc-teams{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .mc-team{display:flex;align-items:center;gap:8px;flex:1}
-.mc-team.right{flex-direction:row-reverse}
-.mc-badge{width:30px;height:30px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
-.mc-name{font-size:14px;font-weight:600}
-.mc-score{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--text);text-align:center;min-width:60px}
-.mc-vs{font-size:13px;color:var(--text3);text-align:center;min-width:40px}
+.mc-team.away{flex-direction:row-reverse}
+.mc-tb{width:30px;height:30px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.mc-tn{font-size:14px;font-weight:600}
+.mc-sc{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;min-width:56px;text-align:center}
+.mc-vs{font-size:13px;color:var(--text3);min-width:40px;text-align:center}
 .mc-odds{display:flex;gap:6px}
-.mc-odd{flex:1;background:var(--bg3);border-radius:8px;padding:8px;text-align:center;cursor:pointer;transition:all 0.2s;border:1.5px solid transparent}
-.mc-odd:hover,.mc-odd.sel{border-color:var(--gold);background:rgba(245,166,35,0.12)}
-.mc-odd-label{font-size:9px;color:var(--text3);margin-bottom:2px}
-.mc-odd-val{font-size:14px;font-weight:700;color:var(--gold)}
-.ai-row{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.05)}
-.ai-label{font-size:11px;color:var(--text3)}
-.ai-bar{flex:1;margin:0 10px;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
-.ai-fill{height:100%;background:linear-gradient(90deg,var(--gold-dark),var(--gold));border-radius:2px;transition:width 0.6s ease}
-.ai-pct{font-size:12px;font-weight:700;color:var(--gold)}
-.ai-tip{font-size:11px;color:var(--text2);margin-left:6px}
+.mc-odd{flex:1;background:var(--bg3);border-radius:9px;padding:9px;text-align:center;cursor:pointer;transition:all 0.2s;border:1.5px solid transparent}
+.mc-odd:hover,.mc-odd.sel{border-color:var(--gold);background:rgba(245,166,35,0.1)}
+.mo-label{font-size:9px;color:var(--text3);margin-bottom:2px}
+.mo-val{font-size:14px;font-weight:700;color:var(--gold)}
+.mc-ai{display:flex;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.05);gap:8px}
+.mc-ai-label{font-size:11px;color:var(--text3);flex-shrink:0}
+.mc-ai-bar{flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.mc-ai-fill{height:100%;background:linear-gradient(90deg,var(--gold-dark),var(--gold));border-radius:2px}
+.mc-ai-pct{font-size:12px;font-weight:700;color:var(--gold);flex-shrink:0}
+.mc-ai-tip{font-size:11px;color:var(--text2);flex-shrink:0}
 
-/* BET SLIP */
-.bet-slip-bar{position:fixed;bottom:var(--nav-h);left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:linear-gradient(135deg,#1a2a0a,#0a1a0a);border-top:1px solid rgba(46,204,113,0.3);padding:10px 20px;display:none;z-index:50;align-items:center;justify-content:space-between}
-.bet-slip-bar.show{display:flex}
-.bs-info{font-size:13px;color:var(--text2)}
-.bs-info strong{color:var(--green);font-size:15px}
-.bs-btn{background:var(--green);color:#111;font-weight:700;font-size:13px;padding:8px 16px;border-radius:10px;border:none;cursor:pointer}
+/* BETS SCREEN */
+.bet-item{margin:0 16px 10px;background:var(--bg2);border-radius:14px;padding:14px 16px;border:1px solid rgba(255,255,255,0.04)}
+.bi-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.bi-match{font-size:13px;font-weight:600}
+.bi-status{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px}
+.bi-status.pending{background:rgba(245,166,35,0.12);color:var(--gold)}
+.bi-status.won{background:rgba(46,204,113,0.12);color:var(--green)}
+.bi-status.lost{background:rgba(231,76,60,0.12);color:var(--red)}
+.bi-detail{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-bottom:6px}
+.bi-result{font-size:14px;font-weight:700;text-align:right}
+.bi-result.won{color:var(--green)}.bi-result.lost{color:var(--red)}.bi-result.pending{color:var(--gold)}
+.bi-btns{display:flex;gap:6px;margin-top:10px}
+.bi-btn{flex:1;border-radius:8px;padding:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;border:1px solid}
+.bi-btn.won{background:rgba(46,204,113,0.1);border-color:var(--green);color:var(--green)}
+.bi-btn.lost{background:rgba(231,76,60,0.1);border-color:var(--red);color:var(--red)}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px;margin-bottom:12px}
+.sg-box{background:var(--bg2);border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,0.04)}
+.sg-label{font-size:11px;color:var(--text3);margin-bottom:5px}
+.sg-val{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1}
+.sg-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.sg-val.gold{color:var(--gold)}.sg-val.green{color:var(--green)}.sg-val.red{color:var(--red)}
+.sport-bar{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.sb-label{font-size:12px;color:var(--text2);width:70px;flex-shrink:0}
+.sb-track{flex:1;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.sb-fill{height:100%;border-radius:4px;transition:width 0.8s}
+.sb-val{font-size:12px;font-weight:700;width:32px;text-align:right;flex-shrink:0}
+
+/* WALLET */
+.wb{text-align:center;padding:30px 20px 16px}
+.wb-label{font-size:13px;color:var(--text3);margin-bottom:6px}
+.wb-amt{font-family:'Bebas Neue',sans-serif;font-size:58px;color:var(--gold);line-height:1}
+.wb-sub{font-size:13px;color:var(--text2);margin-top:6px}
+.wb-actions{display:flex;gap:10px;padding:0 16px 16px}
+.wb-act{flex:1;background:var(--bg2);border-radius:14px;padding:14px;text-align:center;cursor:pointer;border:1px solid rgba(255,255,255,0.06);transition:all 0.2s}
+.wb-act:active{opacity:0.7}
+.wa-icon{font-size:26px;margin-bottom:4px}
+.wa-label{font-size:12px;color:var(--text2);font-weight:500}
+.tx-item{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.tx-desc{font-size:13px;font-weight:500}
+.tx-date{font-size:11px;color:var(--text3);margin-top:2px}
+.tx-amt{font-size:15px;font-weight:700}
+
+/* BET SLIP BAR */
+.slip-bar{position:fixed;bottom:var(--nav);left:0;right:0;background:linear-gradient(135deg,#0D1F08,#0A1505);border-top:1px solid rgba(46,204,113,0.3);padding:10px 20px;display:none;z-index:50;align-items:center;justify-content:space-between}
+.slip-bar.show{display:flex}
+.slip-info{font-size:13px;color:var(--text2)}
+.slip-info strong{color:var(--green);font-size:15px}
+.slip-btn{background:var(--green);color:#111;font-weight:700;font-size:13px;padding:9px 18px;border-radius:10px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif}
 
 /* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:100;display:none;align-items:flex-end;justify-content:center}
-.modal-overlay.show{display:flex}
-.modal{background:var(--bg2);border-radius:24px 24px 0 0;padding:24px 20px;width:100%;max-width:430px;animation:slideUp 0.3s ease}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;display:none;align-items:flex-end;justify-content:center}
+.overlay.show{display:flex}
+.modal{background:var(--bg2);border-radius:24px 24px 0 0;padding:24px 20px max(24px,env(safe-area-inset-bottom));width:100%;animation:slideUp 0.3s ease}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.modal-handle{width:40px;height:4px;background:var(--bg4);border-radius:2px;margin:0 auto 20px}
-.modal-title{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--gold);margin-bottom:6px}
-.modal-match{font-size:13px;color:var(--text2);margin-bottom:20px}
-.modal-pick{background:rgba(245,166,35,0.1);border:1px solid var(--gold);border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
-.modal-pick-label{font-size:12px;color:var(--text2)}
-.modal-pick-val{font-size:20px;font-weight:700;color:var(--gold)}
-.stake-row{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.m-handle{width:40px;height:4px;background:var(--bg4);border-radius:2px;margin:0 auto 20px}
+.m-title{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--gold);margin-bottom:4px}
+.m-match{font-size:13px;color:var(--text3);margin-bottom:18px}
+.m-pick{background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.3);border-radius:12px;padding:12px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.mp-label{font-size:11px;color:var(--text3);margin-bottom:2px}
+.mp-name{font-size:14px;font-weight:600}
+.mp-odd{font-size:22px;font-weight:700;color:var(--gold)}
+.stake-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .stake-label{font-size:13px;color:var(--text2);white-space:nowrap}
 .stake-input{flex:1;background:var(--bg3);border:1.5px solid var(--bg4);border-radius:10px;padding:10px 14px;color:var(--text);font-size:16px;font-weight:700;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s}
 .stake-input:focus{border-color:var(--gold)}
-.stake-presets{display:flex;gap:6px;margin-bottom:20px}
-.stake-preset{flex:1;background:var(--bg3);border-radius:8px;padding:8px;text-align:center;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;transition:all 0.2s;border:1px solid transparent}
-.stake-preset:hover{border-color:var(--gold);color:var(--gold)}
-.potential{background:var(--bg3);border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.presets{display:flex;gap:6px;margin-bottom:14px}
+.preset{flex:1;background:var(--bg3);border-radius:8px;padding:8px;text-align:center;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;border:1px solid transparent;transition:all 0.2s}
+.preset:hover{border-color:var(--gold);color:var(--gold)}
+.potential{background:var(--bg3);border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
 .pot-label{font-size:12px;color:var(--text3)}
-.pot-val{font-size:20px;font-weight:700;color:var(--green)}
-.modal-btns{display:flex;gap:10px}
+.pot-val{font-size:22px;font-weight:700;color:var(--green)}
+.m-btns{display:flex;gap:10px}
 .btn-cancel{flex:1;background:var(--bg3);border:none;border-radius:12px;padding:14px;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
-.btn-bet{flex:2;background:var(--gold);border:none;border-radius:12px;padding:14px;color:#111;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:opacity 0.2s}
+.btn-bet{flex:2;background:var(--gold);border:none;border-radius:12px;padding:14px;color:#111;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
 .btn-bet:active{opacity:0.8}
 
-/* MY BETS SCREEN */
-.section-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 10px}
-.section-head h2{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--text)}
-.bet-item{margin:0 16px 10px;background:var(--bg2);border-radius:14px;padding:14px 16px;border:1px solid rgba(255,255,255,0.04)}
-.bi-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.bi-match{font-size:13px;font-weight:600}
-.bi-status{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px}
-.bi-status.pending{background:rgba(245,166,35,0.15);color:var(--gold)}
-.bi-status.won{background:rgba(46,204,113,0.15);color:var(--green)}
-.bi-status.lost{background:rgba(231,76,60,0.15);color:var(--red)}
-.bi-detail{display:flex;justify-content:space-between;font-size:12px;color:var(--text3)}
-.bi-pick{color:var(--text2);font-weight:500}
-.bi-amount{color:var(--text2)}
-.bi-result{font-size:14px;font-weight:700;margin-top:6px;text-align:right}
-.bi-result.won{color:var(--green)}
-.bi-result.lost{color:var(--red)}
-.bi-result.pending{color:var(--gold)}
-
-/* STATS SCREEN */
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px;margin-bottom:16px}
-.stat-box{background:var(--bg2);border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,0.04)}
-.stat-box-label{font-size:11px;color:var(--text3);margin-bottom:6px}
-.stat-box-val{font-family:'Bebas Neue',sans-serif;font-size:32px;line-height:1}
-.stat-box-val.gold{color:var(--gold)}
-.stat-box-val.green{color:var(--green)}
-.stat-box-val.red{color:var(--red)}
-.stat-box-sub{font-size:11px;color:var(--text3);margin-top:4px}
-.chart-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.chart-bar-label{font-size:12px;color:var(--text2);width:60px;flex-shrink:0}
-.chart-bar-track{flex:1;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden}
-.chart-bar-fill{height:100%;border-radius:4px;transition:width 0.8s ease}
-.chart-bar-val{font-size:12px;font-weight:600;color:var(--text);width:36px;text-align:right;flex-shrink:0}
-
-/* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:var(--nav-h);background:var(--bg2);border-top:1px solid rgba(255,255,255,0.06);display:flex;z-index:40;padding-bottom:env(safe-area-inset-bottom)}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;transition:all 0.2s;border:none;background:none;padding:0}
-.nav-icon{font-size:22px;line-height:1}
-.nav-label{font-size:10px;color:var(--text3);font-weight:500}
-.nav-btn.active .nav-label{color:var(--gold);font-weight:700}
-.nav-dot{width:4px;height:4px;background:var(--gold);border-radius:50%;margin-top:2px;opacity:0}
-.nav-btn.active .nav-dot{opacity:1}
+/* NAV */
+.nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav);background:var(--bg2);border-top:1px solid rgba(255,255,255,0.06);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:40}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;background:none;border:none;padding:0;transition:all 0.2s}
+.nb-icon{width:26px;height:26px;display:flex;align-items:center;justify-content:center}
+.nb-icon svg{width:24px;height:24px;stroke:var(--text3);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;transition:stroke 0.2s}
+.nb.active .nb-icon svg{stroke:var(--gold)}
+.nb-label{font-size:10px;color:var(--text3);font-weight:500;transition:color 0.2s}
+.nb.active .nb-label{color:var(--gold);font-weight:700}
+.nb-dot{width:4px;height:4px;background:var(--gold);border-radius:50%;opacity:0;margin-top:1px}
+.nb.active .nb-dot{opacity:1}
 
 /* TOAST */
-.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--bg2);border:1px solid var(--gold);border-radius:12px;padding:12px 20px;font-size:13px;font-weight:600;color:var(--gold);z-index:200;transition:transform 0.3s ease;white-space:nowrap}
+.toast{position:fixed;top:max(20px,env(safe-area-inset-top));left:50%;transform:translateX(-50%) translateY(-100px);background:var(--bg2);border:1px solid var(--gold);border-radius:14px;padding:12px 22px;font-size:13px;font-weight:600;color:var(--gold);z-index:200;transition:transform 0.3s;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,0.5)}
 .toast.show{transform:translateX(-50%) translateY(0)}
 .toast.green{border-color:var(--green);color:var(--green)}
 
-/* WALLET SCREEN */
-.wallet-balance{text-align:center;padding:30px 20px 20px}
-.wb-label{font-size:13px;color:var(--text3);margin-bottom:8px}
-.wb-amount{font-family:'Bebas Neue',sans-serif;font-size:56px;color:var(--gold);line-height:1}
-.wb-sub{font-size:13px;color:var(--text2);margin-top:6px}
-.wb-actions{display:flex;gap:10px;padding:0 20px 20px}
-.wb-action{flex:1;background:var(--bg2);border-radius:14px;padding:14px;text-align:center;cursor:pointer;border:1px solid rgba(255,255,255,0.06)}
-.wb-action-icon{font-size:24px;margin-bottom:4px}
-.wb-action-label{font-size:12px;color:var(--text2);font-weight:500}
-
-/* EMPTY STATE */
 .empty{text-align:center;padding:60px 20px;color:var(--text3)}
 .empty-icon{font-size:48px;margin-bottom:12px;opacity:0.4}
 .empty-text{font-size:14px}
-
-/* ERROR */
-.api-error{margin:0 16px 10px;background:rgba(231,76,60,0.08);border:1px solid rgba(231,76,60,0.2);border-radius:12px;padding:12px 16px;font-size:12px;color:var(--red)}
+.loading{text-align:center;padding:40px 20px;color:var(--text3)}
+.spinner{width:36px;height:36px;border:3px solid var(--bg3);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.api-err{margin:0 16px 10px;background:rgba(231,76,60,0.08);border:1px solid rgba(231,76,60,0.2);border-radius:12px;padding:12px 16px;font-size:12px;color:var(--red)}
 </style>
 </head>
 <body>
 <div class="app">
-  <!-- STATUS BAR -->
-  <div class="status-bar">
-    <span class="status-time" id="clock">--:--</span>
-    <div style="display:flex;gap:6px;font-size:11px;color:var(--text2)">
-      <span>5G</span><span>🔋</span>
-    </div>
-  </div>
-
   <!-- HEADER -->
-  <div class="header">
-    <div class="logo"><div class="logo-ball">⚽</div>GoldenBall</div>
-    <div class="wallet" onclick="showScreen('wallet')">🪙 <span id="balance-header">10 000</span> Kč</div>
-  </div>
-
-  <!-- SPORT TABS -->
-  <div class="sport-tabs" id="sportTabs">
-    <div class="sport-tab active" data-sport="football" onclick="setSport(this,'football')">
-      <div class="sport-icon">⚽</div><div class="sport-label">Fotbal</div>
-    </div>
-    <div class="sport-tab" data-sport="basketball" onclick="setSport(this,'basketball')">
-      <div class="sport-icon">🏀</div><div class="sport-label">Basket</div>
-    </div>
-    <div class="sport-tab" data-sport="tennis" onclick="setSport(this,'tennis')">
-      <div class="sport-icon">🎾</div><div class="sport-label">Tenis</div>
-    </div>
-    <div class="sport-tab" data-sport="hockey" onclick="setSport(this,'hockey')">
-      <div class="sport-icon">🏒</div><div class="sport-label">Hokej</div>
-    </div>
-    <div class="sport-tab" data-sport="baseball" onclick="setSport(this,'baseball')">
-      <div class="sport-icon">⚾</div><div class="sport-label">Baseball</div>
+  <div class="hdr">
+    <div class="logo"><div class="logo-ball">⚽</div>GOLDENBALL</div>
+    <div class="hdr-right">
+      <div class="wallet-pill" onclick="showScreen('wallet')">🪙 <span id="bal-hdr">10 000</span> Kč</div>
+      <div class="avatar">M</div>
     </div>
   </div>
 
-  <!-- FILTER TABS -->
-  <div class="filter-tabs" id="filterTabs">
-    <div class="filter-tab live-tab active" data-filter="live" onclick="setFilter(this,'live')"><span class="ldot"></span>Live</div>
-    <div class="filter-tab" data-filter="upcoming" onclick="setFilter(this,'upcoming')">Nadcházející</div>
-    <div class="filter-tab" data-filter="today" onclick="setFilter(this,'today')">Dnes</div>
+  <!-- FILTER TABS (only on matches screen) -->
+  <div class="filter-row" id="filterRow">
+    <div class="ftab live active" data-f="live" onclick="setFilter(this,'live')"><span class="ldot"></span>Live</div>
+    <div class="ftab" data-f="upcoming" onclick="setFilter(this,'upcoming')">Nadcházející</div>
+    <div class="ftab" data-f="today" onclick="setFilter(this,'today')">Dnes</div>
   </div>
 
   <!-- SCREENS -->
-  <div class="screen active" id="screen-matches">
+  <!-- MATCHES -->
+  <div class="scroll active" id="sc-matches">
+    <!-- Featured -->
+    <div class="featured" id="featured-panel">
+      <div class="feat-label"><span class="ldot"></span>Live zápas</div>
+      <div class="feat-teams">
+        <div class="feat-team"><div class="feat-flag">🇫🇷</div><div class="feat-name">France</div></div>
+        <div class="feat-score-block">
+          <div class="feat-score" id="feat-score">2:0</div>
+          <div class="feat-time" id="feat-timer">73:21</div>
+        </div>
+        <div class="feat-team"><div class="feat-flag">🇩🇪</div><div class="feat-name">Germany</div></div>
+      </div>
+      <div class="feat-odds">
+        <div class="feat-odd sel" onclick="featOdd(this,'France vyhraje','1',1.89,'France vs Germany')">
+          <div class="fo-label">1</div><div class="fo-val">1.89</div>
+        </div>
+        <div class="feat-odd" onclick="featOdd(this,'Remíza','X',5.12,'France vs Germany')">
+          <div class="fo-label">X</div><div class="fo-val">5.12</div>
+        </div>
+        <div class="feat-odd" onclick="featOdd(this,'Germany vyhraje','2',2.50,'France vs Germany')">
+          <div class="fo-label">2</div><div class="fo-val">2.50</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Badge -->
+    <div class="ai-badge">
+      <div class="ai-left">
+        <div class="ai-icon">🤖</div>
+        <div>
+          <div class="ai-sub">AI Predikce</div>
+          <div class="ai-title" id="ai-pick-title">France vyhraje</div>
+        </div>
+      </div>
+      <div class="ai-conf">
+        <div class="ai-pct" id="ai-pct-main">73%</div>
+        <div class="ai-conf-label">spolehlivost</div>
+      </div>
+    </div>
+
+    <!-- Sports -->
+    <div class="sec-head"><h3>Sporty</h3></div>
+    <div class="sport-row">
+      <div class="sp active" onclick="setSport(this,'football')"><div class="sp-icon">⚽</div><div class="sp-label">Fotbal</div></div>
+      <div class="sp" onclick="setSport(this,'basketball')"><div class="sp-icon">🏀</div><div class="sp-label">Basket</div></div>
+      <div class="sp" onclick="setSport(this,'tennis')"><div class="sp-icon">🎾</div><div class="sp-label">Tenis</div></div>
+      <div class="sp" onclick="setSport(this,'hockey')"><div class="sp-icon">🏒</div><div class="sp-label">Hokej</div></div>
+      <div class="sp" onclick="setSport(this,'americanfootball_nfl')"><div class="sp-icon">🏈</div><div class="sp-label">NFL</div></div>
+      <div class="sp" onclick="setSport(this,'baseball')"><div class="sp-icon">⚾</div><div class="sp-label">Baseball</div></div>
+      <div class="sp" onclick="setSport(this,'mma')"><div class="sp-icon">🥊</div><div class="sp-label">MMA</div></div>
+    </div>
+
+    <!-- Quick stats -->
+    <div class="stats-row">
+      <div class="qstat"><div class="qs-label">Úspěšnost dnes</div><div class="qs-val" id="qs-wr">0%</div><div class="qs-sub" id="qs-pnl">0 Kč</div></div>
+      <div class="qstat"><div class="qs-label">Aktivní sázky</div><div class="qs-val" id="qs-active">0</div><div class="qs-sub">čeká na výsledek</div></div>
+    </div>
+
+    <!-- Matches list -->
+    <div class="sec-head"><h3>Zápasy</h3><span class="see-all">Zobrazit vše</span></div>
     <div id="matches-list"><div class="loading"><div class="spinner"></div>Načítám zápasy...</div></div>
   </div>
 
-  <div class="screen" id="screen-bets">
-    <div class="section-head"><h2>Moje sázky</h2><span style="font-size:12px;color:var(--text3)" id="bets-count"></span></div>
-    <div id="bets-list"><div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">Zatím žádné sázky</div></div></div>
+  <!-- BETS -->
+  <div class="scroll" id="sc-bets">
+    <div class="sec-head" style="padding-top:16px"><h3>Moje sázky</h3><span id="bets-cnt" style="font-size:12px;color:var(--text3)"></span></div>
+    <div id="bets-list"></div>
   </div>
 
-  <div class="screen" id="screen-stats">
-    <div class="section-head"><h2>Statistiky</h2></div>
+  <!-- STATS -->
+  <div class="scroll" id="sc-stats">
+    <div class="sec-head" style="padding-top:16px"><h3>Statistiky</h3></div>
     <div class="stats-grid">
-      <div class="stat-box"><div class="stat-box-label">Zůstatek</div><div class="stat-box-val gold" id="s-balance">10 000</div><div class="stat-box-sub">Kč</div></div>
-      <div class="stat-box"><div class="stat-box-label">Úspěšnost</div><div class="stat-box-val green" id="s-winrate">0%</div><div class="stat-box-sub">výher</div></div>
-      <div class="stat-box"><div class="stat-box-label">Celkem sázek</div><div class="stat-box-val" id="s-total">0</div><div class="stat-box-sub">zápasů</div></div>
-      <div class="stat-box"><div class="stat-box-label">Zisk / ztráta</div><div class="stat-box-val" id="s-pnl">0</div><div class="stat-box-sub">Kč celkem</div></div>
+      <div class="sg-box"><div class="sg-label">Zůstatek</div><div class="sg-val gold" id="sg-bal">10 000</div><div class="sg-sub">Kč</div></div>
+      <div class="sg-box"><div class="sg-label">Úspěšnost</div><div class="sg-val green" id="sg-wr">0%</div><div class="sg-sub">výher</div></div>
+      <div class="sg-box"><div class="sg-label">Celkem sázek</div><div class="sg-val" id="sg-tot">0</div><div class="sg-sub">zápasů</div></div>
+      <div class="sg-box"><div class="sg-label">Zisk / ztráta</div><div class="sg-val" id="sg-pnl">0</div><div class="sg-sub">Kč celkem</div></div>
     </div>
-    <div style="margin:0 16px;background:var(--bg2);border-radius:14px;padding:16px;margin-bottom:10px">
-      <div style="font-size:13px;font-weight:600;margin-bottom:14px;color:var(--text2)">Výsledky po sportech</div>
-      <div id="sport-stats"></div>
+    <div style="margin:0 16px;background:var(--bg2);border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,0.04)">
+      <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:14px">Výsledky po sportech</div>
+      <div id="sport-stats-list"></div>
     </div>
   </div>
 
-  <div class="screen" id="screen-wallet">
-    <div class="wallet-balance">
+  <!-- WALLET -->
+  <div class="scroll" id="sc-wallet">
+    <div class="wb">
       <div class="wb-label">Virtuální peněženka</div>
-      <div class="wb-amount" id="w-balance">10 000</div>
-      <div class="wb-sub">Kč (demo režim)</div>
+      <div class="wb-amt" id="wb-amt">10 000</div>
+      <div class="wb-sub">Kč · demo režim</div>
     </div>
     <div class="wb-actions">
-      <div class="wb-action" onclick="resetBalance()">
-        <div class="wb-action-icon">🔄</div>
-        <div class="wb-action-label">Reset (10 000)</div>
-      </div>
-      <div class="wb-action" onclick="addFunds()">
-        <div class="wb-action-icon">➕</div>
-        <div class="wb-action-label">+1 000 Kč</div>
-      </div>
+      <div class="wb-act" onclick="resetBal()"><div class="wa-icon">🔄</div><div class="wa-label">Reset (10 000)</div></div>
+      <div class="wb-act" onclick="addFunds()"><div class="wa-icon">➕</div><div class="wa-label">+1 000 Kč</div></div>
     </div>
     <div style="padding:0 16px">
-      <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px">Poslední transakce</div>
-      <div id="transactions"></div>
+      <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px">Transakce</div>
+      <div id="tx-list"></div>
     </div>
   </div>
 
-  <!-- BET SLIP -->
-  <div class="bet-slip-bar" id="betSlipBar">
-    <div class="bs-info">Výběr: <strong id="slip-count">0</strong> sázkí</div>
-    <button class="bs-btn" onclick="openBetModal()">Vsadit →</button>
+  <!-- SLIP BAR -->
+  <div class="slip-bar" id="slipBar">
+    <div class="slip-info">Výběr: <strong>1</strong> sázka</div>
+    <button class="slip-btn" onclick="openModal()">Vsadit →</button>
   </div>
 
-  <!-- BOTTOM NAV -->
-  <div class="bottom-nav">
-    <button class="nav-btn active" onclick="showScreen('matches',this)">
-      <div class="nav-icon">🏟️</div><div class="nav-label">Zápasy</div><div class="nav-dot"></div>
+  <!-- NAV -->
+  <div class="nav">
+    <button class="nb active" onclick="showScreen('matches',this)">
+      <div class="nb-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6l1.5 4.5H18l-3.75 2.73 1.5 4.5L12 15l-3.75 2.73 1.5-4.5L6 10.5h4.5z"/></svg></div>
+      <div class="nb-label">Zápasy</div><div class="nb-dot"></div>
     </button>
-    <button class="nav-btn" onclick="showScreen('bets',this)">
-      <div class="nav-icon">🎯</div><div class="nav-label">Sázky</div><div class="nav-dot"></div>
+    <button class="nb" onclick="showScreen('bets',this)">
+      <div class="nb-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></div>
+      <div class="nb-label">Sázky</div><div class="nb-dot"></div>
     </button>
-    <button class="nav-btn" onclick="showScreen('stats',this)">
-      <div class="nav-icon">📊</div><div class="nav-label">Statistiky</div><div class="nav-dot"></div>
+    <button class="nb" onclick="showScreen('stats',this)">
+      <div class="nb-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg></div>
+      <div class="nb-label">Statistiky</div><div class="nb-dot"></div>
     </button>
-    <button class="nav-btn" onclick="showScreen('wallet',this)">
-      <div class="nav-icon">🪙</div><div class="nav-label">Peněženka</div><div class="nav-dot"></div>
+    <button class="nb" onclick="showScreen('wallet',this)">
+      <div class="nb-icon"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12h.01"/><path d="M2 10h20"/></svg></div>
+      <div class="nb-label">Peněženka</div><div class="nb-dot"></div>
     </button>
   </div>
 </div>
 
-<!-- BET MODAL -->
-<div class="modal-overlay" id="betModal" onclick="closeBetModal(event)">
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="closeModal(event)">
   <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Potvrdit sázku</div>
-    <div class="modal-match" id="modal-match-info"></div>
-    <div class="modal-pick">
-      <div><div class="modal-pick-label">Váš tip</div><div id="modal-pick-name" style="font-size:14px;font-weight:600;margin-top:2px"></div></div>
-      <div class="modal-pick-val" id="modal-odd-val"></div>
+    <div class="m-handle"></div>
+    <div class="m-title">Potvrdit sázku</div>
+    <div class="m-match" id="m-match"></div>
+    <div class="m-pick">
+      <div><div class="mp-label">Váš tip</div><div class="mp-name" id="m-pick-name"></div></div>
+      <div class="mp-odd" id="m-odd"></div>
     </div>
     <div class="stake-row">
       <div class="stake-label">Sázka (Kč):</div>
-      <input class="stake-input" type="number" id="stakeInput" value="100" min="10" oninput="updatePotential()">
+      <input class="stake-input" type="number" id="stakeIn" value="100" min="10" oninput="updPot()">
     </div>
-    <div class="stake-presets">
-      <div class="stake-preset" onclick="setStake(100)">100</div>
-      <div class="stake-preset" onclick="setStake(250)">250</div>
-      <div class="stake-preset" onclick="setStake(500)">500</div>
-      <div class="stake-preset" onclick="setStake(1000)">1000</div>
+    <div class="presets">
+      <div class="preset" onclick="setStake(100)">100</div>
+      <div class="preset" onclick="setStake(250)">250</div>
+      <div class="preset" onclick="setStake(500)">500</div>
+      <div class="preset" onclick="setStake(1000)">1000</div>
     </div>
     <div class="potential">
-      <div><div class="pot-label">Možný výdělek</div></div>
-      <div class="pot-val" id="potentialWin">0 Kč</div>
+      <div class="pot-label">Možný výdělek</div>
+      <div class="pot-val" id="pot-val">0 Kč</div>
     </div>
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeBetModal()">Zrušit</button>
+    <div class="m-btns">
+      <button class="btn-cancel" onclick="closeModal()">Zrušit</button>
       <button class="btn-bet" onclick="placeBet()">✓ Vsadit</button>
     </div>
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ============ STATE ============
-const ODDS_KEY = '19150cbc4ede408725cbd605b42a74ae';
-const FOOTBALL_KEY = '1f672e97359e10b84953942cc0c77809';
+const ODDS_KEY='19150cbc4ede408725cbd605b42a74ae';
+const FB_KEY='1f672e97359e10b84953942cc0c77809';
 
-let state = {
-  balance: 10000,
-  bets: [],
-  transactions: [],
-  currentSport: 'football',
-  currentFilter: 'live',
-  selectedBet: null,
-  matches: [],
-  oddsData: {}
-};
+let S={balance:10000,bets:[],tx:[],sport:'football',filter:'live',selBet:null};
+try{const d=localStorage.getItem('gb3');if(d){const p=JSON.parse(d);S={...S,...p};}}catch(e){}
+function save(){try{localStorage.setItem('gb3',JSON.stringify(S));}catch(e){}}
 
-// Load from localStorage
-try {
-  const saved = localStorage.getItem('goldenball_state');
-  if (saved) { const p = JSON.parse(saved); state = {...state, ...p}; }
-} catch(e){}
+// CLOCK
+let featSec=73*60+21;
+setInterval(()=>{featSec++;const m=Math.floor(featSec/60),s=featSec%60;const el=document.getElementById('feat-timer');if(el)el.textContent=m+':'+(s<10?'0':'')+s;},1000);
 
-function saveState() {
-  try { localStorage.setItem('goldenball_state', JSON.stringify(state)); } catch(e){}
+// AI - improved algorithm
+function aiCalc(homeOdd,drawOdd,awayOdd){
+  const ho=parseFloat(homeOdd)||2,dr=parseFloat(drawOdd)||3.3,aw=parseFloat(awayOdd)||3;
+  const rh=1/ho,rd=1/dr,ra=1/aw,tot=rh+rd+ra;
+  const ph=rh/tot,pd=rd/tot,pa=ra/tot;
+  const max=Math.max(ph,pd,pa);
+  // Add variance based on odds spread
+  const spread=Math.abs(ho-aw);
+  const bonus=Math.min(spread*3,12);
+  const raw=max*100+bonus;
+  const noise=(Math.random()-0.5)*8;
+  const conf=Math.min(Math.max(Math.round(raw+noise),52),87);
+  let pick,label;
+  if(max===ph){pick='1';label='Domácí vyhrají';}
+  else if(max===pd){pick='X';label='Remíza';}
+  else{pick='2';label='Hosté vyhrají';}
+  return{conf,pick,label};
 }
 
-// ============ CLOCK ============
-function updateClock() {
-  const now = new Date();
-  document.getElementById('clock').textContent =
-    now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-}
-updateClock(); setInterval(updateClock, 10000);
-
-// ============ NAVIGATION ============
-function showScreen(name, btn) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  const filterRow = document.getElementById('filterTabs');
-  const sportRow = document.getElementById('sportTabs');
-  if (name === 'matches') {
-    filterRow.style.display = 'flex'; sportRow.style.display = 'flex';
-  } else {
-    filterRow.style.display = 'none'; sportRow.style.display = 'none';
-  }
-  if (name === 'bets') renderBets();
-  if (name === 'stats') renderStats();
-  if (name === 'wallet') renderWallet();
-  updateBalanceUI();
+// NAV
+function showScreen(name,btn){
+  document.querySelectorAll('.scroll').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sc-'+name).classList.add('active');
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const fr=document.getElementById('filterRow');
+  fr.style.display=name==='matches'?'flex':'none';
+  if(name==='bets')renderBets();
+  if(name==='stats')renderStats();
+  if(name==='wallet')renderWallet();
+  updBalUI();updQuickStats();
 }
 
-// ============ SPORT / FILTER ============
-function setSport(el, sport) {
-  document.querySelectorAll('.sport-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  state.currentSport = sport;
-  loadMatches();
+// SPORT
+function setSport(el,sport){
+  document.querySelectorAll('.sp').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');S.sport=sport;loadMatches();
 }
 
-function setFilter(el, filter) {
-  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  state.currentFilter = filter;
-  loadMatches();
+// FILTER
+function setFilter(el,f){
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');S.filter=f;loadMatches();
 }
 
-// ============ AI PREDICTION ============
-function aiPrediction(home, away, homeOdd, drawOdd, awayOdd) {
-  // Simple Elo-like model based on odds
-  const totalProb = 1/homeOdd + 1/drawOdd + 1/awayOdd;
-  const homeProb = (1/homeOdd) / totalProb;
-  const drawProb = (1/drawOdd) / totalProb;
-  const awayProb = (1/awayOdd) / totalProb;
-  const max = Math.max(homeProb, drawProb, awayProb);
-  const noise = (Math.random() - 0.5) * 0.06;
-  const confidence = Math.min(Math.max(Math.round((max + noise) * 100), 51), 89);
-  let pick, pickLabel;
-  if (max === homeProb) { pick = '1'; pickLabel = home + ' vyhraje'; }
-  else if (max === drawProb) { pick = 'X'; pickLabel = 'Remíza'; }
-  else { pick = '2'; pickLabel = away + ' vyhraje'; }
-  return { confidence, pick, pickLabel };
+// FEATURED ODD SELECT
+function featOdd(el,label,pick,odd,match){
+  document.querySelectorAll('.feat-odd').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  S.selBet={matchId:'featured',pickLabel:label,pick,odd,matchName:match,sport:'football'};
+  document.getElementById('slipBar').classList.add('show');
 }
 
-// ============ FOOTBALL DATA ============
-async function fetchFootball() {
-  const list = document.getElementById('matches-list');
-  list.innerHTML = '<div class="loading"><div class="spinner"></div>Načítám fotbal...</div>';
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    const url = `https://v3.football.api-sports.io/fixtures?date=${today}&timezone=Europe/Prague`;
-    const res = await fetch(url, {
-      headers: { 'x-apisports-key': FOOTBALL_KEY }
-    });
-    const data = await res.json();
-    if (!data.response || data.response.length === 0) {
-      list.innerHTML = '<div class="empty"><div class="empty-icon">⚽</div><div class="empty-text">Dnes žádné zápasy</div></div>';
-      return;
-    }
-    // Filter by status
-    let matches = data.response;
-    if (state.currentFilter === 'live') {
-      matches = matches.filter(m => ['1H','2H','HT','ET','BT','P','LIVE'].includes(m.fixture.status.short));
-      if (matches.length === 0) matches = data.response.slice(0, 8);
-    } else if (state.currentFilter === 'upcoming') {
-      matches = matches.filter(m => m.fixture.status.short === 'NS').slice(0, 10);
-    } else {
-      matches = data.response.slice(0, 12);
-    }
-    // Fetch odds
-    await fetchOdds(matches.map(m => m.fixture.id));
-    renderFootballMatches(matches);
-  } catch(e) {
-    list.innerHTML = `<div class="api-error">⚠️ Chyba při načítání: ${e.message}</div>` + renderDemoMatches();
+// LOAD MATCHES
+function loadMatches(){
+  fetchOdds(S.sport);
+}
+
+async function fetchFootball_disabled(){
+  const list=document.getElementById('matches-list');
+  list.innerHTML='<div class="loading"><div class="spinner"></div>Načítám fotbal...</div>';
+  try{
+    const today=new Date().toISOString().split('T')[0];
+    const res=await fetch(`https://v3.football.api-sports.io/fixtures?date=${today}&timezone=Europe/Prague`,{headers:{'x-apisports-key':FB_KEY}});
+    const data=await res.json();
+    if(!data.response||!data.response.length){list.innerHTML='<div class="empty"><div class="empty-icon">⚽</div><div class="empty-text">Dnes žádné zápasy</div></div>';return;}
+    let matches=data.response;
+    if(S.filter==='live'){
+      const live=matches.filter(m=>['1H','2H','HT','ET','BT','P','LIVE'].includes(m.fixture.status.short));
+      matches=live.length?live:matches.slice(0,8);
+    }else if(S.filter==='upcoming'){
+      matches=matches.filter(m=>m.fixture.status.short==='NS').slice(0,12);
+    }else{matches=matches.slice(0,14);}
+    renderFootball(matches);
+  }catch(e){
+    list.innerHTML='<div class="api-err">⚠️ Chyba při načítání dat: '+e.message+'</div>';
   }
 }
 
-async function fetchOdds(fixtureIds) {
-  try {
-    for (const id of fixtureIds.slice(0, 3)) {
-      const res = await fetch(`https://v3.football.api-sports.io/odds?fixture=${id}&bookmaker=8`, {
-        headers: { 'x-apisports-key': FOOTBALL_KEY }
-      });
-      const data = await res.json();
-      if (data.response && data.response[0]) {
-        const bets = data.response[0].bookmakers[0]?.bets;
-        const matchWinner = bets?.find(b => b.name === 'Match Winner');
-        if (matchWinner) {
-          state.oddsData[id] = {
-            home: parseFloat(matchWinner.values.find(v => v.value === 'Home')?.odd || 2.0),
-            draw: parseFloat(matchWinner.values.find(v => v.value === 'Draw')?.odd || 3.2),
-            away: parseFloat(matchWinner.values.find(v => v.value === 'Away')?.odd || 3.5)
-          };
-        }
-      }
-    }
-  } catch(e) {}
-}
-
-function renderFootballMatches(matches) {
-  const list = document.getElementById('matches-list');
-  if (!matches.length) {
-    list.innerHTML = '<div class="empty"><div class="empty-icon">⚽</div><div class="empty-text">Žádné zápasy</div></div>';
-    return;
-  }
-  list.innerHTML = matches.map(m => {
-    const f = m.fixture; const h = m.teams.home; const a = m.teams.away;
-    const g = m.goals; const s = f.status;
-    const isLive = ['1H','2H','HT','ET'].includes(s.short);
-    const odds = state.oddsData[f.id] || { home: (1.5 + Math.random()*2).toFixed(2)*1, draw: (2.8 + Math.random()*1.5).toFixed(2)*1, away: (2.0 + Math.random()*2).toFixed(2)*1 };
-    const ai = aiPrediction(h.name, a.name, odds.home, odds.draw, odds.away);
-    const scoreOrVs = (g.home !== null) ? `${g.home}:${g.away}` : null;
-    return `<div class="match-card" style="animation-delay:${matches.indexOf(m)*0.05}s">
-      <div class="mc-header">
+function renderFootball(matches){
+  const list=document.getElementById('matches-list');
+  list.innerHTML=matches.map((m,i)=>{
+    const f=m.fixture,h=m.teams.home,a=m.teams.away,g=m.goals,st=f.status;
+    const isLive=['1H','2H','HT','ET'].includes(st.short);
+    // Generate odds based on team IDs for consistency
+    const seed=(h.id+a.id)%100/100;
+    const ho=+(1.5+seed*2).toFixed(2);
+    const aw=+(1.5+(1-seed)*2).toFixed(2);
+    const dr=+(2.8+seed*0.8).toFixed(2);
+    const ai=aiCalc(ho,dr,aw);
+    const score=g.home!==null?`${g.home}:${g.away}`:null;
+    const hn=h.name.length>13?h.name.substring(0,13)+'…':h.name;
+    const an=a.name.length>13?a.name.substring(0,13)+'…':a.name;
+    const timeStr=isLive?`<span class="ldot"></span>${st.elapsed}'`:(st.short==='NS'?new Date(f.date).toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'}):st.long);
+    return`<div class="mc" style="animation-delay:${i*0.04}s">
+      <div class="mc-top">
         <div class="mc-league">🏆 ${m.league.name}</div>
-        <div class="mc-time ${isLive?'live':(s.short==='NS'?'':'')}">${isLive?'<span class="ldot"></span>'+s.elapsed+"'" : (s.short==='NS'?new Date(f.date).toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'}):s.long)}</div>
+        <div class="mc-badge ${isLive?'live':''}">${timeStr}</div>
       </div>
       <div class="mc-teams">
-        <div class="mc-team"><div class="mc-badge">🏠</div><div class="mc-name">${h.name.length>12?h.name.substring(0,12)+'…':h.name}</div></div>
-        ${scoreOrVs ? `<div class="mc-score">${scoreOrVs}</div>` : `<div class="mc-vs">vs</div>`}
-        <div class="mc-team right"><div class="mc-name">${a.name.length>12?a.name.substring(0,12)+'…':a.name}</div><div class="mc-badge">✈️</div></div>
+        <div class="mc-team"><div class="mc-tb">🏠</div><div class="mc-tn">${hn}</div></div>
+        ${score?`<div class="mc-sc">${score}</div>`:`<div class="mc-vs">vs</div>`}
+        <div class="mc-team away"><div class="mc-tn">${an}</div><div class="mc-tb">✈️</div></div>
       </div>
       <div class="mc-odds">
-        <div class="mc-odd" onclick="selectBet(this,'${f.id}','${h.name} vyhraje','1',${odds.home},'${h.name} vs ${a.name}')">
-          <div class="mc-odd-label">1</div><div class="mc-odd-val">${odds.home.toFixed(2)}</div>
-        </div>
-        <div class="mc-odd" onclick="selectBet(this,'${f.id}','Remíza','X',${odds.draw},'${h.name} vs ${a.name}')">
-          <div class="mc-odd-label">X</div><div class="mc-odd-val">${odds.draw.toFixed(2)}</div>
-        </div>
-        <div class="mc-odd" onclick="selectBet(this,'${f.id}','${a.name} vyhraje','2',${odds.away},'${h.name} vs ${a.name}')">
-          <div class="mc-odd-label">2</div><div class="mc-odd-val">${odds.away.toFixed(2)}</div>
-        </div>
+        <div class="mc-odd" onclick="selBet(this,'${f.id}','${hn} vyhraje','1',${ho},'${hn} vs ${an}')"><div class="mo-label">1</div><div class="mo-val">${ho}</div></div>
+        <div class="mc-odd" onclick="selBet(this,'${f.id}','Remíza','X',${dr},'${hn} vs ${an}')"><div class="mo-label">X</div><div class="mo-val">${dr}</div></div>
+        <div class="mc-odd" onclick="selBet(this,'${f.id}','${an} vyhraje','2',${aw},'${hn} vs ${an}')"><div class="mo-label">2</div><div class="mo-val">${aw}</div></div>
       </div>
-      <div class="ai-row">
-        <div class="ai-label">🤖 AI tip:</div>
-        <div class="ai-bar"><div class="ai-fill" style="width:${ai.confidence}%"></div></div>
-        <div class="ai-pct">${ai.confidence}%</div>
-        <div class="ai-tip">${ai.pickLabel}</div>
+      <div class="mc-ai">
+        <div class="mc-ai-label">🤖 AI:</div>
+        <div class="mc-ai-bar"><div class="mc-ai-fill" style="width:${ai.conf}%"></div></div>
+        <div class="mc-ai-pct">${ai.conf}%</div>
+        <div class="mc-ai-tip">${ai.label}</div>
       </div>
     </div>`;
   }).join('');
 }
 
-// ============ OTHER SPORTS (odds-based) ============
-async function fetchOtherSport(sport) {
-  const list = document.getElementById('matches-list');
-  list.innerHTML = `<div class="loading"><div class="spinner"></div>Načítám ${sport}...</div>`;
-  const sportMap = {
-    basketball: { key: 'basketball_nba', emoji: '🏀', label: 'NBA' },
-    tennis: { key: 'tennis_atp_french_open', emoji: '🎾', label: 'ATP Roland Garros' },
-    hockey: { key: 'icehockey_nhl', emoji: '🏒', label: 'NHL' },
-    baseball: { key: 'baseball_mlb', emoji: '⚾', label: 'MLB' }
-  };
-  const s = sportMap[sport];
-  if (!s) return;
-  try {
-    const res = await fetch(`https://api.the-odds-api.com/v4/sports/${s.key}/odds/?apiKey=${ODDS_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`);
-    const data = await res.json();
-    if (!Array.isArray(data) || data.length === 0) {
-      list.innerHTML = `<div class="empty"><div class="empty-icon">${s.emoji}</div><div class="empty-text">Žádné zápasy</div></div>`;
-      return;
-    }
-    const matches = data.slice(0, 10);
-    list.innerHTML = matches.map((m, i) => {
-      const book = m.bookmakers[0];
-      const market = book?.markets[0];
-      const outcomes = market?.outcomes || [];
-      const homeOut = outcomes.find(o => o.name === m.home_team);
-      const awayOut = outcomes.find(o => o.name === m.away_team);
-      const homeOdd = homeOut?.price || 2.0;
-      const awayOdd = awayOut?.price || 2.0;
-      const drawOdd = outcomes.find(o => o.name === 'Draw')?.price || 3.2;
-      const ai = aiPrediction(m.home_team, m.away_team, homeOdd, drawOdd, awayOdd);
-      const hasThreeWay = outcomes.some(o => o.name === 'Draw');
-      const startTime = new Date(m.commence_time);
-      const timeLabel = startTime.toLocaleTimeString('cs', {hour:'2-digit',minute:'2-digit'});
-      const homeName = m.home_team.length > 14 ? m.home_team.substring(0,14)+'…' : m.home_team;
-      const awayName = m.away_team.length > 14 ? m.away_team.substring(0,14)+'…' : m.away_team;
-      return `<div class="match-card" style="animation-delay:${i*0.05}s">
-        <div class="mc-header">
-          <div class="mc-league">${s.emoji} ${s.label}</div>
-          <div class="mc-time">${timeLabel}</div>
+async function fetchOdds(sport){
+  const list=document.getElementById('matches-list');
+  const map={football:'soccer_epl',basketball:'basketball_nba',tennis:'tennis_atp_french_open',hockey:'icehockey_nhl',americanfootball_nfl:'americanfootball_nfl',baseball:'baseball_mlb',mma:'mma_mixed_martial_arts'};
+  const emojis={football:'⚽',basketball:'🏀',tennis:'🎾',hockey:'🏒',americanfootball_nfl:'🏈',baseball:'⚾',mma:'🥊'};
+  const labels={football:'Premier League',basketball:'NBA',tennis:'ATP Roland Garros',hockey:'NHL',americanfootball_nfl:'NFL',baseball:'MLB',mma:'UFC/MMA'};
+  const key=map[sport]||sport;
+  list.innerHTML=`<div class="loading"><div class="spinner"></div>Načítám ${labels[sport]||sport}...</div>`;
+  try{
+    const res=await fetch(`https://api.the-odds-api.com/v4/sports/${key}/odds/?apiKey=${ODDS_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`);
+    const data=await res.json();
+    if(!Array.isArray(data)||!data.length){list.innerHTML=`<div class="empty"><div class="empty-icon">${emojis[sport]||'🏆'}</div><div class="empty-text">Žádné nadcházející zápasy</div></div>`;return;}
+    const matches=data.slice(0,12);
+    list.innerHTML=matches.map((m,i)=>{
+      const book=m.bookmakers[0],market=book?.markets[0],outs=market?.outcomes||[];
+      const ho=outs.find(o=>o.name===m.home_team)?.price||2;
+      const aw=outs.find(o=>o.name===m.away_team)?.price||2;
+      const dr=outs.find(o=>o.name==='Draw')?.price||3.3;
+      const hasDraw=outs.some(o=>o.name==='Draw');
+      const ai=aiCalc(ho,dr,aw);
+      const hn=m.home_team.length>13?m.home_team.substring(0,13)+'…':m.home_team;
+      const an=m.away_team.length>13?m.away_team.substring(0,13)+'…':m.away_team;
+      const t=new Date(m.commence_time).toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
+      return`<div class="mc" style="animation-delay:${i*0.04}s">
+        <div class="mc-top">
+          <div class="mc-league">${emojis[sport]||'🏆'} ${labels[sport]||sport}</div>
+          <div class="mc-badge">${t}</div>
         </div>
         <div class="mc-teams">
-          <div class="mc-team"><div class="mc-badge">${s.emoji}</div><div class="mc-name">${homeName}</div></div>
+          <div class="mc-team"><div class="mc-tb">${emojis[sport]||'🏆'}</div><div class="mc-tn">${hn}</div></div>
           <div class="mc-vs">vs</div>
-          <div class="mc-team right"><div class="mc-name">${awayName}</div><div class="mc-badge">${s.emoji}</div></div>
+          <div class="mc-team away"><div class="mc-tn">${an}</div><div class="mc-tb">${emojis[sport]||'🏆'}</div></div>
         </div>
         <div class="mc-odds">
-          <div class="mc-odd" onclick="selectBet(this,'${m.id}','${homeName} vyhraje','1',${homeOdd},'${homeName} vs ${awayName}')">
-            <div class="mc-odd-label">1</div><div class="mc-odd-val">${homeOdd.toFixed(2)}</div>
-          </div>
-          ${hasThreeWay ? `<div class="mc-odd" onclick="selectBet(this,'${m.id}','Remíza','X',${drawOdd},'${homeName} vs ${awayName}')">
-            <div class="mc-odd-label">X</div><div class="mc-odd-val">${drawOdd.toFixed(2)}</div>
-          </div>` : ''}
-          <div class="mc-odd" onclick="selectBet(this,'${m.id}','${awayName} vyhraje','2',${awayOdd},'${homeName} vs ${awayName}')">
-            <div class="mc-odd-label">2</div><div class="mc-odd-val">${awayOdd.toFixed(2)}</div>
-          </div>
+          <div class="mc-odd" onclick="selBet(this,'${m.id}','${hn} vyhraje','1',${ho.toFixed(2)},'${hn} vs ${an}')"><div class="mo-label">1</div><div class="mo-val">${ho.toFixed(2)}</div></div>
+          ${hasDraw?`<div class="mc-odd" onclick="selBet(this,'${m.id}','Remíza','X',${dr.toFixed(2)},'${hn} vs ${an}')"><div class="mo-label">X</div><div class="mo-val">${dr.toFixed(2)}</div></div>`:''}
+          <div class="mc-odd" onclick="selBet(this,'${m.id}','${an} vyhraje','2',${aw.toFixed(2)},'${hn} vs ${an}')"><div class="mo-label">2</div><div class="mo-val">${aw.toFixed(2)}</div></div>
         </div>
-        <div class="ai-row">
-          <div class="ai-label">🤖 AI tip:</div>
-          <div class="ai-bar"><div class="ai-fill" style="width:${ai.confidence}%"></div></div>
-          <div class="ai-pct">${ai.confidence}%</div>
-          <div class="ai-tip">${ai.pickLabel}</div>
+        <div class="mc-ai">
+          <div class="mc-ai-label">🤖 AI:</div>
+          <div class="mc-ai-bar"><div class="mc-ai-fill" style="width:${ai.conf}%"></div></div>
+          <div class="mc-ai-pct">${ai.conf}%</div>
+          <div class="mc-ai-tip">${ai.label}</div>
         </div>
       </div>`;
     }).join('');
-  } catch(e) {
-    list.innerHTML = `<div class="api-error">⚠️ Chyba: ${e.message}</div><div class="empty"><div class="empty-icon">${s.emoji}</div><div class="empty-text">Zkus to znovu</div></div>`;
+  }catch(e){
+    list.innerHTML=`<div class="api-err">⚠️ Chyba: ${e.message}</div>`;
   }
 }
 
-function loadMatches() {
-  if (state.currentSport === 'football') fetchFootball();
-  else fetchOtherSport(state.currentSport);
-}
-
-// ============ BETTING ============
-function selectBet(el, matchId, pickLabel, pick, odd, matchName) {
-  // Deselect others in same card
-  const card = el.closest('.match-card');
-  card.querySelectorAll('.mc-odd').forEach(o => o.classList.remove('sel'));
+// SELECT BET
+function selBet(el,id,label,pick,odd,match){
+  const card=el.closest('.mc');
+  card.querySelectorAll('.mc-odd').forEach(o=>o.classList.remove('sel'));
   el.classList.add('sel');
-  state.selectedBet = { matchId, pickLabel, pick, odd, matchName, sport: state.currentSport };
-  document.getElementById('betSlipBar').classList.add('show');
-  document.getElementById('slip-count').textContent = '1';
+  S.selBet={matchId:id,pickLabel:label,pick,odd:parseFloat(odd),matchName:match,sport:S.sport};
+  document.getElementById('slipBar').classList.add('show');
 }
 
-function openBetModal() {
-  if (!state.selectedBet) return;
-  const b = state.selectedBet;
-  document.getElementById('modal-match-info').textContent = b.matchName;
-  document.getElementById('modal-pick-name').textContent = b.pickLabel;
-  document.getElementById('modal-odd-val').textContent = b.odd.toFixed(2);
-  document.getElementById('stakeInput').value = 100;
-  updatePotential();
-  document.getElementById('betModal').classList.add('show');
+// MODAL
+function openModal(){
+  if(!S.selBet)return;
+  const b=S.selBet;
+  document.getElementById('m-match').textContent=b.matchName;
+  document.getElementById('m-pick-name').textContent=b.pickLabel;
+  document.getElementById('m-odd').textContent=b.odd.toFixed(2);
+  document.getElementById('stakeIn').value=100;
+  updPot();
+  document.getElementById('overlay').classList.add('show');
 }
 
-function closeBetModal(e) {
-  if (!e || e.target === document.getElementById('betModal')) {
-    document.getElementById('betModal').classList.remove('show');
+function closeModal(e){
+  if(!e||e.target===document.getElementById('overlay')){
+    document.getElementById('overlay').classList.remove('show');
+    document.getElementById('slipBar').classList.remove('show');
+    // Deselect odds
+    document.querySelectorAll('.mc-odd.sel,.feat-odd.sel').forEach(o=>o.classList.remove('sel'));
+    S.selBet=null;
   }
 }
 
-function setStake(amount) {
-  document.getElementById('stakeInput').value = amount;
-  updatePotential();
+function setStake(v){document.getElementById('stakeIn').value=v;updPot();}
+function updPot(){
+  if(!S.selBet)return;
+  const s=parseFloat(document.getElementById('stakeIn').value)||0;
+  document.getElementById('pot-val').textContent=Math.round(s*S.selBet.odd).toLocaleString('cs')+' Kč';
 }
 
-function updatePotential() {
-  if (!state.selectedBet) return;
-  const stake = parseFloat(document.getElementById('stakeInput').value) || 0;
-  const win = stake * state.selectedBet.odd;
-  document.getElementById('potentialWin').textContent = Math.round(win).toLocaleString('cs') + ' Kč';
+function placeBet(){
+  const stake=parseFloat(document.getElementById('stakeIn').value);
+  if(!stake||stake<10){showToast('Minimální sázka je 10 Kč');return;}
+  if(stake>S.balance){showToast('Nedostatek prostředků!');return;}
+  const b=S.selBet;
+  S.balance-=stake;
+  const bet={id:Date.now(),matchId:b.matchId,matchName:b.matchName,pick:b.pick,pickLabel:b.pickLabel,odd:b.odd,stake,potential:Math.round(stake*b.odd),sport:b.sport,status:'pending',date:new Date().toLocaleString('cs')};
+  S.bets.unshift(bet);
+  S.tx.unshift({type:'bet',amount:-stake,desc:b.matchName,date:bet.date});
+  save();updBalUI();updQuickStats();
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('slipBar').classList.remove('show');
+  document.querySelectorAll('.mc-odd.sel,.feat-odd.sel').forEach(o=>o.classList.remove('sel'));
+  S.selBet=null;
+  showToast(`✓ Vsazeno ${stake} Kč na ${b.pickLabel}`,'green');
 }
 
-function placeBet() {
-  const stake = parseFloat(document.getElementById('stakeInput').value);
-  if (!stake || stake < 10) { showToast('Minimální sázka je 10 Kč'); return; }
-  if (stake > state.balance) { showToast('Nedostatek prostředků!'); return; }
-  const b = state.selectedBet;
-  state.balance -= stake;
-  const bet = {
-    id: Date.now(),
-    matchId: b.matchId,
-    matchName: b.matchName,
-    pick: b.pick,
-    pickLabel: b.pickLabel,
-    odd: b.odd,
-    stake,
-    potential: Math.round(stake * b.odd),
-    sport: b.sport,
-    status: 'pending',
-    date: new Date().toLocaleString('cs')
-  };
-  state.bets.unshift(bet);
-  state.transactions.unshift({ type: 'bet', amount: -stake, desc: b.matchName, date: bet.date });
-  saveState();
-  updateBalanceUI();
-  closeBetModal();
-  document.getElementById('betSlipBar').classList.remove('show');
-  showToast(`✓ Vsazeno ${stake} Kč na ${b.pickLabel}`, 'green');
-}
-
-// ============ RENDER BETS ============
-function renderBets() {
-  const list = document.getElementById('bets-list');
-  document.getElementById('bets-count').textContent = `${state.bets.length} sázek`;
-  if (!state.bets.length) {
-    list.innerHTML = '<div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">Zatím žádné sázky</div></div>';
-    return;
-  }
-  list.innerHTML = state.bets.map(b => `
+// BETS
+function renderBets(){
+  const list=document.getElementById('bets-list');
+  document.getElementById('bets-cnt').textContent=`${S.bets.length} sázek`;
+  if(!S.bets.length){list.innerHTML='<div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">Zatím žádné sázky</div></div>';return;}
+  list.innerHTML=S.bets.map(b=>`
     <div class="bet-item">
-      <div class="bi-header">
-        <div class="bi-match">${b.matchName}</div>
-        <div class="bi-status ${b.status}">${b.status==='pending'?'Čeká':b.status==='won'?'✓ Výhra':'✗ Prohra'}</div>
-      </div>
-      <div class="bi-detail">
-        <div class="bi-pick">${b.pickLabel} @ ${b.odd.toFixed(2)}</div>
-        <div class="bi-amount">Sázka: ${b.stake} Kč</div>
-      </div>
-      <div class="bi-result ${b.status}">
-        ${b.status==='pending'?`Možný výdělek: ${b.potential.toLocaleString('cs')} Kč`:b.status==='won'?`+${b.potential.toLocaleString('cs')} Kč`:`-${b.stake} Kč`}
-      </div>
-      ${b.status==='pending'?`<div style="display:flex;gap:6px;margin-top:10px">
-        <button onclick="settleBet(${b.id},'won')" style="flex:1;background:rgba(46,204,113,0.15);border:1px solid var(--green);color:var(--green);border-radius:8px;padding:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">✓ Výhra</button>
-        <button onclick="settleBet(${b.id},'lost')" style="flex:1;background:rgba(231,76,60,0.15);border:1px solid var(--red);color:var(--red);border-radius:8px;padding:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">✗ Prohra</button>
-      </div>`:''}
+      <div class="bi-top"><div class="bi-match">${b.matchName}</div><div class="bi-status ${b.status}">${b.status==='pending'?'Čeká':b.status==='won'?'✓ Výhra':'✗ Prohra'}</div></div>
+      <div class="bi-detail"><span>${b.pickLabel} @ ${b.odd.toFixed(2)}</span><span>Sázka: ${b.stake} Kč</span></div>
+      <div class="bi-result ${b.status}">${b.status==='pending'?'Možný výdělek: '+b.potential.toLocaleString('cs')+' Kč':b.status==='won'?'+'+b.potential.toLocaleString('cs')+' Kč':'-'+b.stake+' Kč'}</div>
+      ${b.status==='pending'?`<div class="bi-btns"><button class="bi-btn won" onclick="settle(${b.id},'won')">✓ Výhra</button><button class="bi-btn lost" onclick="settle(${b.id},'lost')">✗ Prohra</button></div>`:''}
     </div>`).join('');
 }
 
-function settleBet(id, result) {
-  const bet = state.bets.find(b => b.id === id);
-  if (!bet) return;
-  bet.status = result;
-  if (result === 'won') {
-    state.balance += bet.potential;
-    state.transactions.unshift({ type: 'win', amount: bet.potential, desc: bet.matchName, date: new Date().toLocaleString('cs') });
-    showToast(`🎉 Výhra ${bet.potential.toLocaleString('cs')} Kč!`, 'green');
-  } else {
-    showToast(`Prohra -${bet.stake} Kč`);
-  }
-  saveState(); updateBalanceUI(); renderBets();
+function settle(id,res){
+  const b=S.bets.find(x=>x.id===id);if(!b)return;
+  b.status=res;
+  if(res==='won'){S.balance+=b.potential;S.tx.unshift({type:'win',amount:b.potential,desc:b.matchName,date:new Date().toLocaleString('cs')});showToast('🎉 Výhra '+b.potential.toLocaleString('cs')+' Kč!','green');}
+  else showToast('Prohra -'+b.stake+' Kč');
+  save();updBalUI();updQuickStats();renderBets();
 }
 
-// ============ STATS ============
-function renderStats() {
-  const total = state.bets.length;
-  const won = state.bets.filter(b => b.status === 'won').length;
-  const lost = state.bets.filter(b => b.status === 'lost').length;
-  const winrate = total > 0 ? Math.round((won / (won + lost || 1)) * 100) : 0;
-  const pnl = state.balance - 10000;
-  document.getElementById('s-balance').textContent = state.balance.toLocaleString('cs');
-  document.getElementById('s-winrate').textContent = winrate + '%';
-  document.getElementById('s-winrate').className = 'stat-box-val ' + (winrate >= 50 ? 'green' : 'red');
-  document.getElementById('s-total').textContent = total;
-  document.getElementById('s-pnl').textContent = (pnl >= 0 ? '+' : '') + pnl.toLocaleString('cs');
-  document.getElementById('s-pnl').className = 'stat-box-val ' + (pnl >= 0 ? 'green' : 'red');
-  const sports = ['football','basketball','tennis','hockey','baseball'];
-  const sportLabels = { football:'⚽ Fotbal', basketball:'🏀 Basket', tennis:'🎾 Tenis', hockey:'🏒 Hokej', baseball:'⚾ Baseball' };
-  const container = document.getElementById('sport-stats');
-  container.innerHTML = sports.map(sp => {
-    const sbets = state.bets.filter(b => b.sport === sp);
-    if (!sbets.length) return '';
-    const sw = sbets.filter(b => b.status === 'won').length;
-    const sl = sbets.filter(b => b.status === 'lost').length;
-    const swr = (sw + sl) > 0 ? Math.round(sw / (sw + sl) * 100) : 0;
-    return `<div class="chart-bar-row">
-      <div class="chart-bar-label">${sportLabels[sp]}</div>
-      <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${swr}%;background:${swr>=50?'var(--green)':'var(--red)'}"></div></div>
-      <div class="chart-bar-val">${swr}%</div>
-    </div>`;
-  }).join('') || '<div style="color:var(--text3);font-size:13px">Zatím žádná data</div>';
+// STATS
+function renderStats(){
+  const tot=S.bets.length,won=S.bets.filter(b=>b.status==='won').length,lost=S.bets.filter(b=>b.status==='lost').length;
+  const wr=tot>0?Math.round(won/(won+lost||1)*100):0;
+  const pnl=S.balance-10000;
+  document.getElementById('sg-bal').textContent=S.balance.toLocaleString('cs');
+  document.getElementById('sg-wr').textContent=wr+'%';
+  document.getElementById('sg-wr').className='sg-val '+(wr>=50?'green':'red');
+  document.getElementById('sg-tot').textContent=tot;
+  document.getElementById('sg-pnl').textContent=(pnl>=0?'+':'')+pnl.toLocaleString('cs');
+  document.getElementById('sg-pnl').className='sg-val '+(pnl>=0?'green':'red');
+  const sports=['football','basketball','tennis','hockey','americanfootball_nfl','baseball','mma'];
+  const slabels={football:'⚽ Fotbal',basketball:'🏀 Basket',tennis:'🎾 Tenis',hockey:'🏒 Hokej',americanfootball_nfl:'🏈 NFL',baseball:'⚾ Baseball',mma:'🥊 MMA'};
+  const cont=document.getElementById('sport-stats-list');
+  const rows=sports.map(sp=>{
+    const sb=S.bets.filter(b=>b.sport===sp);if(!sb.length)return'';
+    const sw=sb.filter(b=>b.status==='won').length,sl=sb.filter(b=>b.status==='lost').length;
+    const swr=(sw+sl)>0?Math.round(sw/(sw+sl)*100):0;
+    return`<div class="sport-bar"><div class="sb-label">${slabels[sp]}</div><div class="sb-track"><div class="sb-fill" style="width:${swr}%;background:${swr>=50?'var(--green)':'var(--red)'}"></div></div><div class="sb-val" style="color:${swr>=50?'var(--green)':'var(--red)'}">${swr}%</div></div>`;
+  }).join('');
+  cont.innerHTML=rows||'<div style="color:var(--text3);font-size:13px">Zatím žádná data</div>';
 }
 
-// ============ WALLET ============
-function renderWallet() {
-  document.getElementById('w-balance').textContent = state.balance.toLocaleString('cs');
-  const tx = document.getElementById('transactions');
-  if (!state.transactions.length) {
-    tx.innerHTML = '<div class="empty"><div class="empty-icon">💳</div><div class="empty-text">Žádné transakce</div></div>';
-    return;
-  }
-  tx.innerHTML = state.transactions.slice(0, 15).map(t => `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
-      <div>
-        <div style="font-size:13px;font-weight:500">${t.desc}</div>
-        <div style="font-size:11px;color:var(--text3)">${t.date}</div>
-      </div>
-      <div style="font-size:15px;font-weight:700;color:${t.amount>0?'var(--green)':'var(--red)'}">${t.amount>0?'+':''}${t.amount.toLocaleString('cs')} Kč</div>
-    </div>`).join('');
+// WALLET
+function renderWallet(){
+  document.getElementById('wb-amt').textContent=S.balance.toLocaleString('cs');
+  const tx=document.getElementById('tx-list');
+  if(!S.tx.length){tx.innerHTML='<div class="empty"><div class="empty-icon">💳</div><div class="empty-text">Žádné transakce</div></div>';return;}
+  tx.innerHTML=S.tx.slice(0,20).map(t=>`<div class="tx-item"><div><div class="tx-desc">${t.desc}</div><div class="tx-date">${t.date}</div></div><div class="tx-amt" style="color:${t.amount>0?'var(--green)':'var(--red)'}">${t.amount>0?'+':''}${t.amount.toLocaleString('cs')} Kč</div></div>`).join('');
 }
 
-function resetBalance() {
-  if (!confirm('Resetovat zůstatek na 10 000 Kč?')) return;
-  state.balance = 10000; state.bets = []; state.transactions = [];
-  saveState(); updateBalanceUI(); renderWallet();
-  showToast('Zůstatek resetován na 10 000 Kč', 'green');
+function resetBal(){if(!confirm('Resetovat zůstatek na 10 000 Kč a smazat vše?'))return;S.balance=10000;S.bets=[];S.tx=[];save();updBalUI();updQuickStats();renderWallet();showToast('Reset na 10 000 Kč','green');}
+function addFunds(){S.balance+=1000;S.tx.unshift({type:'deposit',amount:1000,desc:'Dobití kreditu',date:new Date().toLocaleString('cs')});save();updBalUI();renderWallet();showToast('+1 000 Kč přidáno','green');}
+
+function updBalUI(){
+  const f=S.balance.toLocaleString('cs');
+  ['bal-hdr','wb-amt','sg-bal'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=f;});
 }
 
-function addFunds() {
-  state.balance += 1000;
-  state.transactions.unshift({ type: 'deposit', amount: 1000, desc: 'Dobití kreditu', date: new Date().toLocaleString('cs') });
-  saveState(); updateBalanceUI(); renderWallet();
-  showToast('+1 000 Kč přidáno', 'green');
+function updQuickStats(){
+  const tot=S.bets.length,won=S.bets.filter(b=>b.status==='won').length,lost=S.bets.filter(b=>b.status==='lost').length;
+  const wr=tot>0?Math.round(won/(won+lost||1)*100):0;
+  const pnl=S.balance-10000;
+  const active=S.bets.filter(b=>b.status==='pending').length;
+  const wrEl=document.getElementById('qs-wr');if(wrEl)wrEl.textContent=wr+'%';
+  const pnlEl=document.getElementById('qs-pnl');if(pnlEl){pnlEl.textContent=(pnl>=0?'+':'')+pnl.toLocaleString('cs')+' Kč';pnlEl.style.color=pnl>=0?'var(--green)':'var(--red)';}
+  const acEl=document.getElementById('qs-active');if(acEl)acEl.textContent=active;
 }
 
-function updateBalanceUI() {
-  const fmt = state.balance.toLocaleString('cs');
-  document.getElementById('balance-header').textContent = fmt;
-  const wb = document.getElementById('w-balance');
-  if (wb) wb.textContent = fmt;
-  const sb = document.getElementById('s-balance');
-  if (sb) sb.textContent = fmt;
+function showToast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast'+(type==='green'?' green':'');
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-// ============ TOAST ============
-function showToast(msg, type) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast' + (type === 'green' ? ' green' : '');
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-// ============ INIT ============
-updateBalanceUI();
-loadMatches();
+// INIT
+updBalUI();updQuickStats();loadMatches();
 </script>
 </body>
 </html>
