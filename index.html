@@ -67,7 +67,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 .mc-teams{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .mc-team{display:flex;align-items:center;gap:8px;flex:1}
 .mc-team.away{flex-direction:row-reverse}
-.mc-tb{width:30px;height:30px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.mc-tb{width:36px;height:36px;background:transparent;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;overflow:hidden;flex-shrink:0}
 .mc-tn{font-size:14px;font-weight:600}
 .mc-vs{font-size:13px;color:var(--text3);min-width:40px;text-align:center}
 .mc-odds{display:flex;gap:6px}
@@ -209,13 +209,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 
     <div class="sec-head"><h3>Sporty</h3></div>
     <div class="sport-row">
-      <div class="sp" onclick="setSport(this,'tennis')"><div class="sp-icon">🎾</div><div class="sp-label">Tenis</div></div>
       <div class="sp active" onclick="setSport(this,'football')"><div class="sp-icon">⚽</div><div class="sp-label">Fotbal</div></div>
+      <div class="sp" onclick="setSport(this,'tennis')"><div class="sp-icon">🎾</div><div class="sp-label">Tenis</div></div>
       <div class="sp" onclick="setSport(this,'basketball')"><div class="sp-icon">🏀</div><div class="sp-label">Basket</div></div>
       <div class="sp" onclick="setSport(this,'hockey')"><div class="sp-icon">🏒</div><div class="sp-label">Hokej</div></div>
       <div class="sp" onclick="setSport(this,'americanfootball_nfl')"><div class="sp-icon">🏈</div><div class="sp-label">NFL</div></div>
       <div class="sp" onclick="setSport(this,'baseball')"><div class="sp-icon">⚾</div><div class="sp-label">Baseball</div></div>
-      <div class="sp" onclick="setSport(this,'mma')"><div class="sp-icon">🥊</div><div class="sp-label">MMA</div></div>
+      <div class="sp" onclick="setSport(this,'mma')"><div class="sp-icon" style="background:#CC0000;border-radius:16px;display:flex;align-items:center;justify-content:center"><span style="font-family:'Bebas Neue',sans-serif;font-size:18px;font-weight:900;color:#fff;letter-spacing:1px">UFC</span></div><div class="sp-label">MMA</div></div>
     </div>
 
     <div class="stats-row">
@@ -331,11 +331,15 @@ function aiCalc(ho,dr,aw,hn,an){
   const max=Math.max(ph,pd,pa);
   const bonus=Math.min(Math.abs(ho-aw)*3,12);
   const conf=Math.min(Math.max(Math.round((max*100+bonus)+(Math.random()-0.5)*8),52),87);
+  const hnClean=(hn||'Domácí').replace('…','').trim();
+  const anClean=(an||'Hosté').replace('…','').trim();
+  const hFlag=getFlag(hn)||'';
+  const aFlag=getFlag(an)||'';
   let label;
-  if(max===ph)label=(hn||'Domácí')+' vyhraje';
+  if(max===ph)label=hnClean+' vyhraje '+(hFlag);
   else if(max===pd)label='Remíza';
-  else label=(an||'Hosté')+' vyhraje';
-  return{conf,label};
+  else label=anClean+' vyhraje '+(aFlag);
+  return{conf,label:label.trim()};
 }
 
 // FLAGS
@@ -382,8 +386,31 @@ function getFlag(name){
     'bruins':'⚫','canadiens':'🔴','maple leafs':'🔵','rangers':'🔵','penguins':'⚫',
     'capitals':'🔴','lightning':'🔵','oilers':'🟠','avalanche':'🔵','panthers':'🔴',
     'stars':'🟢','hurricanes':'🔴','flames':'🔴','canucks':'🔵','predators':'🟡',
-    // National teams
-    'france':'🇫🇷','germany':'🇩🇪','spain':'🇪🇸','brazil':'🇧🇷','argentina':'🇦🇷',
+    // MMA / UFC fighters
+    'mcgregor':'🇮🇪','ngannou':'🇨🇲','jones':'🇺🇸','adesanya':'🇳🇿',
+    'poirier':'🇺🇸','oliveira':'🇧🇷','makhachev':'🇷🇺','volkanovski':'🇦🇺',
+    'pereira':'🇧🇷','blachowicz':'🇵🇱','ankalaev':'🇷🇺','procházka':'🇨🇿',
+    'jiri':'🇨🇿','prochazka':'🇨🇿','aspinall':'🇬🇧','miocic':'🇺🇸',
+    'cormier':'🇺🇸','stipe':'🇺🇸','fury':'🇬🇧','wilder':'🇺🇸',
+    'yan':'🇷🇺','sterling':'🇺🇸','o malley':'🇺🇸','omalley':'🇺🇸',
+    'pantoja':'🇧🇷','moreno':'🇲🇽','figueiredo':'🇧🇷','benavidez':'🇺🇸',
+    'holloway':'🇺🇸','korean zombie':'🇰🇷','zombie':'🇰🇷','ige':'🇺🇸',
+    'usman':'🇳🇬','edwards':'🇬🇧','covington':'🇺🇸','colby':'🇺🇸',
+    'whittaker':'🇦🇺','costa':'🇧🇷','romero':'🇨🇺','vettori':'🇮🇹',
+    'nunes':'🇧🇷','shevchenko':'🇧🇷','jedrzejczyk':'🇵🇱','joanna':'🇵🇱',
+    'zhang':'🇨🇳','weili':'🇨🇳','namajunas':'🇺🇸','rose':'🇺🇸',
+    'cyborg':'🇧🇷','pena':'🇺🇸','mma':'🥊',
+    // Chinese fighters
+    'ming':'🇨🇳','shi':'🇨🇳','ming shi':'🇨🇳','yan':'🇨🇳','shuai':'🇨🇳',
+    'shuai yin':'🇨🇳','yin':'🇨🇳',
+    // Mongolian fighters  
+    'batbayar':'🇲🇳','namsrai':'🇲🇳','namsrai batbayar':'🇲🇳',
+    // Indian fighters
+    'tomar':'🇮🇳','puja':'🇮🇳','puja tomar':'🇮🇳',
+    // Canadian fighters
+    'dufort':'🇨🇦','michael dufort':'🇨🇦','dufour':'🇨🇦',
+    // American fighters
+    'henry':'🇺🇸','jeremy henry':'🇺🇸','jeremy':'🇺🇸','germany':'🇩🇪','spain':'🇪🇸','brazil':'🇧🇷','argentina':'🇦🇷',
     'england':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','portugal':'🇵🇹','italy':'🇮🇹','netherlands':'🇳🇱',
     'usa':'🇺🇸','mexico':'🇲🇽','turkey':'🇹🇷','sweden':'🇸🇪','norway':'🇳🇴',
     'denmark':'🇩🇰','croatia':'🇭🇷','serbia':'🇷🇸','poland':'🇵🇱','belgium':'🇧🇪',
@@ -393,9 +420,60 @@ function getFlag(name){
   return null;
 }
 
+// TEAM COLORS for clubs
+function getTeamColor(name){
+  name=name.toLowerCase();
+  const colors={
+    // Brazilian football
+    'flamengo':'#E10000','palmeiras':'#006400','corinthians':'#1a1a1a',
+    'botafogo':'#1a1a1a','fluminense':'#8B0000','sao paulo':'#E10000',
+    'vasco':'#1a1a1a','cruzeiro':'#1E3A8A','internacional':'#E10000',
+    'gremio':'#1E3A8A','fortaleza':'#1E3A8A','bragantino':'#E10000',
+    'atletico paranaense':'#E10000','paranaense':'#E10000','mirassol':'#DAA520',
+    'atletico mineiro':'#1a1a1a','santos':'#E8E8E8','bahia':'#1E3A8A',
+    'atletico goianiense':'#E10000','america':'#E10000','ceara':'#1a1a1a',
+    // MLS
+    'inter miami':'#E91E8C','la galaxy':'#002F6C','seattle':'#5D9741',
+    'new york city':'#6CACE4','chicago':'#E10000','portland':'#004812',
+    // NBA
+    'lakers':'#552583','warriors':'#1D428A','celtics':'#007A33',
+    'bulls':'#CE1141','heat':'#98002E','nets':'#1a1a1a',
+    'knicks':'#006BB6','76ers':'#006BB6','bucks':'#00471B',
+    'suns':'#E56020','nuggets':'#0E2240','thunder':'#007AC1',
+    'grizzlies':'#5D76A9','spurs':'#1a1a1a','mavericks':'#00538C',
+    'clippers':'#C8102E','rockets':'#CE1141','jazz':'#002B5C',
+    'raptors':'#CE1141','hawks':'#E03A3E','cavaliers':'#860038',
+    'pistons':'#C8102E','pacers':'#002D62','hornets':'#1D1160',
+    'wizards':'#002B5C','magic':'#0077C0',
+    'oklahoma':'#007AC1','golden state':'#1D428A',
+    // NHL
+    'bruins':'#FFB81C','canadiens':'#AF1E2D','maple leafs':'#003E7E',
+    'rangers':'#0038A8','penguins':'#FCB514','capitals':'#041E42',
+    'lightning':'#002868','oilers':'#FF4C00','avalanche':'#6F263D',
+    'panthers':'#C8102E','stars':'#006847','hurricanes':'#CE1141',
+    'flames':'#C8102E','canucks':'#00205B','predators':'#FFB81C',
+  };
+  for(const[k,v] of Object.entries(colors)){
+    if(name.includes(k)||k.includes(name.split(' ')[0]))return v;
+  }
+  return null;
+}
+
 function teamIcon(name,fallback){
-  const f=getFlag(name);
-  return f?{icon:f,big:true}:{icon:fallback,big:false};
+  // 1. Try flag first (for national teams, tennis players, MMA fighters)
+  const flag=getFlag(name);
+  if(flag)return{html:`<span style="font-size:36px;line-height:1">${flag}</span>`};
+  // 2. Try team color logo
+  const color=getTeamColor(name);
+  const initials=name.trim().split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+  if(color){
+    return{html:`<div style="width:44px;height:44px;background:${color};border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;font-family:'DM Sans',sans-serif;letter-spacing:-0.5px">${initials}</div>`};
+  }
+  // 3. Fallback — sport emoji or UFC logo for MMA
+  if(fallback==='🥊'){
+    return{html:`<div style="width:36px;height:36px;background:#CC0000;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:11px;font-weight:900;color:#fff;letter-spacing:0.5px">UFC</div>`};
+  }
+  return{html:`<span style="font-size:28px;line-height:1">${fallback}</span>`};
 }
 
 // NAV
@@ -450,12 +528,12 @@ function updateCarousel(matches,sport){
       <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:14px">⏰ ${d} · ${t}</div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
         <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex:1">
-          <div style="font-size:${hi.big?44:32}px;line-height:1">${hi.icon}</div>
+          ${hi.html}
           <div style="font-size:13px;font-weight:600;text-align:center">${hn}</div>
         </div>
         <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--text3);padding:0 8px">VS</div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex:1">
-          <div style="font-size:${ai2.big?44:32}px;line-height:1">${ai2.icon}</div>
+          ${ai2.html}
           <div style="font-size:13px;font-weight:600;text-align:center">${an}</div>
         </div>
       </div>
@@ -581,9 +659,9 @@ async function loadMatches(){
     return`<div class="mc" style="animation-delay:${i*0.04}s">
       <div class="mc-top"><div class="mc-league">${em} ${lb}</div><div class="mc-badge">${t} · ${d}</div></div>
       <div class="mc-teams">
-        <div class="mc-team"><div class="mc-tb" style="font-size:${hi.big?18:14}px">${hi.icon}</div><div class="mc-tn">${hn}</div></div>
+        <div class="mc-team"><div class="mc-tb">${hi.html}</div><div class="mc-tn">${hn}</div></div>
         <div class="mc-vs">vs</div>
-        <div class="mc-team away"><div class="mc-tn">${an}</div><div class="mc-tb" style="font-size:${ai2.big?18:14}px">${ai2.icon}</div></div>
+        <div class="mc-team away"><div class="mc-tn">${an}</div><div class="mc-tb">${ai2.html}</div></div>
       </div>
       <div class="mc-odds">
         <div class="mc-odd" onclick="selBet(this,'${m.id}','${hn} vyhraje','1',${ho},'${hn} vs ${an}','${mt}')"><div class="mo-label">1</div><div class="mo-val">${ho}</div></div>
@@ -655,7 +733,7 @@ function autoSettle(){
       const p=b.matchTime.match(/(\d+)\.\s*(\d+)\.\s*(\d+):(\d+)/);
       if(!p)return;
       const matchDate=new Date(new Date().getFullYear(),parseInt(p[2])-1,parseInt(p[1]),parseInt(p[3]),parseInt(p[4]),0);
-      if(now<matchDate.getTime()+(2*60*60*1000))return;
+      if(now<matchDate.getTime()+(60*60*1000))return;
       const res=b.odd<=2.5?(Math.random()<0.65?'won':'lost'):(Math.random()<0.40?'won':'lost');
       b.status=res;
       if(res==='won'){S.balance+=b.potential;S.tx.unshift({type:'win',amount:b.potential,desc:b.matchName,date:new Date().toLocaleString('cs')});}
