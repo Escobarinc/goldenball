@@ -512,60 +512,166 @@ function renderFootball(matches){
 
 async function fetchOdds(sport){
   const list=document.getElementById('matches-list');
-  const map={football:'soccer_epl',basketball:'basketball_nba',tennis:'tennis_atp_french_open',hockey:'icehockey_nhl',americanfootball_nfl:'americanfootball_nfl',baseball:'baseball_mlb',mma:'mma_mixed_martial_arts'};
+  const map={
+    football:'soccer_brazil_campeonato',
+    basketball:'basketball_nba',
+    tennis:'tennis_atp_french_open',
+    hockey:'icehockey_nhl',
+    americanfootball_nfl:'americanfootball_nfl',
+    baseball:'baseball_mlb',
+    mma:'mma_mixed_martial_arts'
+  };
+  const fallbacks={
+    football:[
+      'soccer_usa_mls',
+      'soccer_turkey_super_league',
+      'soccer_netherlands_eredivisie',
+      'soccer_portugal_primeira_liga',
+      'soccer_argentina_primera_division',
+      'soccer_mexico_ligamx',
+      'soccer_conmebol_copa_libertadores',
+      'soccer_sweden_allsvenskan',
+      'soccer_norway_eliteserien',
+      'soccer_denmark_superliga',
+    ],
+    tennis:['tennis_wta_french_open','tennis_atp_roland_garros_2026'],
+    hockey:['icehockey_sweden_hockey_league','icehockey_sweden_allsvenskan'],
+  };
   const emojis={football:'⚽',basketball:'🏀',tennis:'🎾',hockey:'🏒',americanfootball_nfl:'🏈',baseball:'⚾',mma:'🥊'};
-  const labels={football:'Premier League',basketball:'NBA',tennis:'ATP Roland Garros',hockey:'NHL',americanfootball_nfl:'NFL',baseball:'MLB',mma:'UFC/MMA'};
-  const key=map[sport]||sport;
-  list.innerHTML=`<div class="loading"><div class="spinner"></div>Načítám ${labels[sport]||sport}...</div>`;
-  try{
-    const res=await fetch(`https://api.the-odds-api.com/v4/sports/${key}/odds/?apiKey=${ODDS_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`);
-    const data=await res.json();
-    if(!Array.isArray(data)||!data.length){list.innerHTML=`<div class="empty"><div class="empty-icon">${emojis[sport]||'🏆'}</div><div class="empty-text">Žádné nadcházející zápasy</div></div>`;return;}
-    const matches=data.slice(0,12);
-    list.innerHTML=matches.map((m,i)=>{
-      const book=m.bookmakers[0],market=book?.markets[0],outs=market?.outcomes||[];
-      const ho=outs.find(o=>o.name===m.home_team)?.price||2;
-      const aw=outs.find(o=>o.name===m.away_team)?.price||2;
-      const dr=outs.find(o=>o.name==='Draw')?.price||3.3;
-      const hasDraw=outs.some(o=>o.name==='Draw');
-      const ai=aiCalc(ho,dr,aw);
-      const hn=m.home_team.length>13?m.home_team.substring(0,13)+'…':m.home_team;
-      const an=m.away_team.length>13?m.away_team.substring(0,13)+'…':m.away_team;
-      const t=new Date(m.commence_time).toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
-      return`<div class="mc" style="animation-delay:${i*0.04}s">
-        <div class="mc-top">
-          <div class="mc-league">${emojis[sport]||'🏆'} ${labels[sport]||sport}</div>
-          <div class="mc-badge">${t}</div>
-        </div>
-        <div class="mc-teams">
-          <div class="mc-team"><div class="mc-tb">${emojis[sport]||'🏆'}</div><div class="mc-tn">${hn}</div></div>
-          <div class="mc-vs">vs</div>
-          <div class="mc-team away"><div class="mc-tn">${an}</div><div class="mc-tb">${emojis[sport]||'🏆'}</div></div>
-        </div>
-        <div class="mc-odds">
-          <div class="mc-odd" onclick="selBet(this,'${m.id}','${hn} vyhraje','1',${ho.toFixed(2)},'${hn} vs ${an}')"><div class="mo-label">1</div><div class="mo-val">${ho.toFixed(2)}</div></div>
-          ${hasDraw?`<div class="mc-odd" onclick="selBet(this,'${m.id}','Remíza','X',${dr.toFixed(2)},'${hn} vs ${an}')"><div class="mo-label">X</div><div class="mo-val">${dr.toFixed(2)}</div></div>`:''}
-          <div class="mc-odd" onclick="selBet(this,'${m.id}','${an} vyhraje','2',${aw.toFixed(2)},'${hn} vs ${an}')"><div class="mo-label">2</div><div class="mo-val">${aw.toFixed(2)}</div></div>
-        </div>
-        <div class="mc-ai">
-          <div class="mc-ai-label">🤖 AI:</div>
-          <div class="mc-ai-bar"><div class="mc-ai-fill" style="width:${ai.conf}%"></div></div>
-          <div class="mc-ai-pct">${ai.conf}%</div>
-          <div class="mc-ai-tip">${ai.label}</div>
-        </div>
-      </div>`;
-    }).join('');
-  }catch(e){
-    list.innerHTML=`<div class="api-err">⚠️ Chyba: ${e.message}</div>`;
+  const labels={football:'Fotbal',basketball:'NBA',tennis:'ATP Roland Garros',hockey:'NHL',americanfootball_nfl:'NFL',baseball:'MLB',mma:'UFC/MMA'};
+  const em=emojis[sport]||'🏆';
+  const lb=labels[sport]||sport;
+  list.innerHTML=`<div class="loading"><div class="spinner"></div>Načítám ${lb}...</div>`;
+
+  // Try multiple leagues for football
+  const keysToTry=[map[sport]||sport,...(fallbacks[sport]||[])];
+  let allMatches=[];
+
+  for(const key of keysToTry){
+    try{
+      const res=await fetch(`https://api.the-odds-api.com/v4/sports/${key}/odds/?apiKey=${ODDS_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`);
+      if(!res.ok)continue;
+      const data=await res.json();
+      if(Array.isArray(data)&&data.length){
+        allMatches=[...allMatches,...data.map(m=>({...m,_league:key}))];
+        if(allMatches.length>=8)break;
+      }
+    }catch(e){continue;}
   }
+
+  if(!allMatches.length){
+    list.innerHTML=`<div class="empty"><div class="empty-icon">${em}</div><div class="empty-text">Žádné nadcházející zápasy</div></div>`;
+    return;
+  }
+
+  // Update carousel with real matches
+  updateCarousel(allMatches.slice(0,5),sport);
+
+  const matches=allMatches.slice(0,14);
+  list.innerHTML=matches.map((m,i)=>{
+    const book=m.bookmakers[0],market=book?.markets[0],outs=market?.outcomes||[];
+    const ho=outs.find(o=>o.name===m.home_team)?.price||2;
+    const aw=outs.find(o=>o.name===m.away_team)?.price||2;
+    const dr=outs.find(o=>o.name==='Draw')?.price||3.3;
+    const hasDraw=outs.some(o=>o.name==='Draw');
+    const ai=aiCalc(ho,dr,aw);
+    const hn=m.home_team.length>13?m.home_team.substring(0,13)+'…':m.home_team;
+    const an=m.away_team.length>13?m.away_team.substring(0,13)+'…':m.away_team;
+    const dt=new Date(m.commence_time);
+    const t=dt.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
+    const d=dt.toLocaleDateString('cs',{day:'numeric',month:'numeric'});
+    const matchTime=`${d} ${t}`;
+    return`<div class="mc" style="animation-delay:${i*0.04}s">
+      <div class="mc-top">
+        <div class="mc-league">${em} ${lb}</div>
+        <div class="mc-badge">${t} · ${d}</div>
+      </div>
+      <div class="mc-teams">
+        <div class="mc-team"><div class="mc-tb">${em}</div><div class="mc-tn">${hn}</div></div>
+        <div class="mc-vs">vs</div>
+        <div class="mc-team away"><div class="mc-tn">${an}</div><div class="mc-tb">${em}</div></div>
+      </div>
+      <div class="mc-odds">
+        <div class="mc-odd" onclick="selBet(this,'${m.id}','${hn} vyhraje','1',${ho.toFixed(2)},'${hn} vs ${an}','${matchTime}')"><div class="mo-label">1</div><div class="mo-val">${ho.toFixed(2)}</div></div>
+        ${hasDraw?`<div class="mc-odd" onclick="selBet(this,'${m.id}','Remíza','X',${dr.toFixed(2)},'${hn} vs ${an}','${matchTime}')"><div class="mo-label">X</div><div class="mo-val">${dr.toFixed(2)}</div></div>`:''}
+        <div class="mc-odd" onclick="selBet(this,'${m.id}','${an} vyhraje','2',${aw.toFixed(2)},'${hn} vs ${an}','${matchTime}')"><div class="mo-label">2</div><div class="mo-val">${aw.toFixed(2)}</div></div>
+      </div>
+      <div class="mc-ai">
+        <div class="mc-ai-label">🤖 AI:</div>
+        <div class="mc-ai-bar"><div class="mc-ai-fill" style="width:${ai.conf}%"></div></div>
+        <div class="mc-ai-pct">${ai.conf}%</div>
+        <div class="mc-ai-tip">${ai.label}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// UPDATE CAROUSEL with real API data
+function updateCarousel(matches,sport){
+  const emojis={football:'⚽',basketball:'🏀',tennis:'🎾',hockey:'🏒',americanfootball_nfl:'🏈',baseball:'⚾',mma:'🥊'};
+  const em=emojis[sport]||'🏆';
+  const wrap=document.getElementById('carousel-wrap');
+  const W=wrap.offsetWidth||document.body.offsetWidth-32;
+  const car=document.getElementById('carousel');
+  carIdx=0;carSlideCount=matches.length;
+  car.style.transition='none';
+  car.style.transform='translateX(0)';
+  car.innerHTML=matches.map((m,i)=>{
+    const book=m.bookmakers[0],market=book?.markets[0],outs=market?.outcomes||[];
+    const ho=+(outs.find(o=>o.name===m.home_team)?.price||2).toFixed(2);
+    const aw=+(outs.find(o=>o.name===m.away_team)?.price||2).toFixed(2);
+    const dr=+(outs.find(o=>o.name==='Draw')?.price||3.3).toFixed(2);
+    const hasDraw=outs.some(o=>o.name==='Draw');
+    const ai=aiCalc(ho,dr,aw);
+    const hn=m.home_team.length>14?m.home_team.substring(0,14)+'…':m.home_team;
+    const an=m.away_team.length>14?m.away_team.substring(0,14)+'…':m.away_team;
+    const dt=new Date(m.commence_time);
+    const t=dt.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
+    const d=dt.toLocaleDateString('cs',{day:'numeric',month:'numeric'});
+    const matchTime=`${d} ${t}`;
+    return`<div class="car-slide" data-conf="${ai.conf}" data-label="${ai.label}" style="min-width:${W}px;background:linear-gradient(145deg,#1E1A0E,#1A1A1A);border-radius:20px;padding:20px;border:1px solid rgba(245,166,35,0.2);box-sizing:border-box;flex-shrink:0">
+      <div style="font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">⏰ ${d} · ${t}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1">
+          <div style="font-size:34px">${em}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text2);text-align:center">${hn}</div>
+        </div>
+        <div style="text-align:center;padding:0 10px">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--text3)">vs</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1">
+          <div style="font-size:34px">${em}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text2);text-align:center">${an}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:4px">
+        <div class="feat-odd" onclick="selBet(this,'${m.id}','${hn} vyhraje','1',${ho},'${hn} vs ${an}','${matchTime}')" style="flex:1;background:var(--bg3);border-radius:12px;padding:10px;text-align:center;cursor:pointer;border:1.5px solid transparent;transition:all 0.2s">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:2px">1</div><div style="font-size:16px;font-weight:700;color:var(--gold)">${ho}</div>
+        </div>
+        ${hasDraw?`<div class="feat-odd" onclick="selBet(this,'${m.id}','Remíza','X',${dr},'${hn} vs ${an}','${matchTime}')" style="flex:1;background:var(--bg3);border-radius:12px;padding:10px;text-align:center;cursor:pointer;border:1.5px solid transparent;transition:all 0.2s">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:2px">X</div><div style="font-size:16px;font-weight:700;color:var(--gold)">${dr}</div>
+        </div>`:''}
+        <div class="feat-odd" onclick="selBet(this,'${m.id}','${an} vyhraje','2',${aw},'${hn} vs ${an}','${matchTime}')" style="flex:1;background:var(--bg3);border-radius:12px;padding:10px;text-align:center;cursor:pointer;border:1.5px solid transparent;transition:all 0.2s">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:2px">2</div><div style="font-size:16px;font-weight:700;color:var(--gold)">${aw}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Dots
+  const dots=document.getElementById('carousel-dots');
+  dots.innerHTML=matches.map((_,i)=>`<div onclick="goSlide(${i})" style="width:${i===0?'20px':'6px'};height:6px;background:${i===0?'var(--gold)':'var(--bg4)'};border-radius:3px;transition:all 0.3s;cursor:pointer"></div>`).join('');
+
+  // AI badge - first match
+  goSlide(0);
 }
 
 // SELECT BET
-function selBet(el,id,label,pick,odd,match){
-  const card=el.closest('.mc');
-  card.querySelectorAll('.mc-odd').forEach(o=>o.classList.remove('sel'));
+function selBet(el,id,label,pick,odd,match,matchTime){
+  const card=el.closest('.mc')||el.closest('div[style*="min-width"]');
+  if(card){card.querySelectorAll('.mc-odd,.feat-odd').forEach(o=>o.classList.remove('sel'));}
   el.classList.add('sel');
-  S.selBet={matchId:id,pickLabel:label,pick,odd:parseFloat(odd),matchName:match,sport:S.sport};
+  S.selBet={matchId:id,pickLabel:label,pick,odd:parseFloat(odd),matchName:match,matchTime:matchTime||'',sport:S.sport};
   document.getElementById('slipBar').classList.add('show');
 }
 
@@ -604,7 +710,7 @@ function placeBet(){
   if(stake>S.balance){showToast('Nedostatek prostředků!');return;}
   const b=S.selBet;
   S.balance-=stake;
-  const bet={id:Date.now(),matchId:b.matchId,matchName:b.matchName,pick:b.pick,pickLabel:b.pickLabel,odd:b.odd,stake,potential:Math.round(stake*b.odd),sport:b.sport,status:'pending',date:new Date().toLocaleString('cs')};
+  const bet={id:Date.now(),matchId:b.matchId,matchName:b.matchName,matchTime:b.matchTime||'',pick:b.pick,pickLabel:b.pickLabel,odd:b.odd,stake,potential:Math.round(stake*b.odd),sport:b.sport,status:'pending',date:new Date().toLocaleString('cs')};
   S.bets.unshift(bet);
   S.tx.unshift({type:'bet',amount:-stake,desc:b.matchName,date:bet.date});
   save();updBalUI();updQuickStats();
@@ -623,6 +729,7 @@ function renderBets(){
   list.innerHTML=S.bets.map(b=>`
     <div class="bet-item">
       <div class="bi-top"><div class="bi-match">${b.matchName}</div><div class="bi-status ${b.status}">${b.status==='pending'?'Čeká':b.status==='won'?'✓ Výhra':'✗ Prohra'}</div></div>
+      ${b.matchTime?`<div style="font-size:11px;color:var(--gold);margin-bottom:6px">⏰ ${b.matchTime}</div>`:''}
       <div class="bi-detail"><span>${b.pickLabel} @ ${b.odd.toFixed(2)}</span><span>Sázka: ${b.stake} Kč</span></div>
       <div class="bi-result ${b.status}">${b.status==='pending'?'Možný výdělek: '+b.potential.toLocaleString('cs')+' Kč':b.status==='won'?'+'+b.potential.toLocaleString('cs')+' Kč':'-'+b.stake+' Kč'}</div>
       ${b.status==='pending'?`<div class="bi-btns"><button class="bi-btn won" onclick="settle(${b.id},'won')">✓ Výhra</button><button class="bi-btn lost" onclick="settle(${b.id},'lost')">✗ Prohra</button></div>`:''}
@@ -695,91 +802,45 @@ function showToast(msg,type){
 // INIT
 updBalUI();updQuickStats();loadMatches();
 
-// CAROUSEL
-const featMatches=[
-  {home:'France',away:'Germany',hflag:'🇫🇷',aflag:'🇩🇪',score:'2:0',time:'live',elapsed:0,h:1.89,d:5.12,a:2.50},
-  {home:'Real Madrid',away:'Barcelona',hflag:'🇪🇸',aflag:'🇪🇸',score:null,time:'20:45',elapsed:null,h:2.10,d:3.40,a:3.20},
-  {home:'Man City',away:'Arsenal',hflag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',aflag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',score:null,time:'18:30',elapsed:null,h:1.75,d:3.60,a:4.50},
-];
+// CAROUSEL INIT - data comes from API via updateCarousel()
 let carIdx=0;
-let carTimer=null;
-
-function buildCarousel(){
-  const car=document.getElementById('carousel');
-  const wrap=document.getElementById('carousel-wrap');
-  const W=wrap.offsetWidth||358;
-  car.innerHTML=featMatches.map((m,i)=>{
-    const ai=aiCalc(m.h,m.d,m.a);
-    const isLive=m.time==='live';
-    return`<div style="min-width:${W}px;background:linear-gradient(145deg,#1E1A0E,#1A1A1A);border-radius:20px;padding:20px;border:1px solid rgba(245,166,35,0.2);position:relative;overflow:hidden;box-sizing:border-box">
-      <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:${isLive?'#FF4444':'var(--gold)'};text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">
-        ${isLive?'<span class="ldot"></span>Live zápas':'⏰ '+m.time}
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1">
-          <div style="font-size:38px">${m.hflag}</div>
-          <div style="font-size:13px;font-weight:600;color:var(--text2)">${m.home}</div>
-        </div>
-        <div style="text-align:center">
-          ${m.score?`<div style="font-family:'Bebas Neue',sans-serif;font-size:52px;line-height:1;letter-spacing:3px">${m.score}</div>`
-          :`<div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--text3)">vs</div>`}
-          ${isLive?`<div id="ctimer-${i}" style="font-size:13px;color:var(--gold);font-weight:600;margin-top:4px">73:21</div>`:''}
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1">
-          <div style="font-size:38px">${m.aflag}</div>
-          <div style="font-size:13px;font-weight:600;color:var(--text2)">${m.away}</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <div class="feat-odd" onclick="featOdd(this,'${m.home} vyhraje','1',${m.h},'${m.home} vs ${m.away}')" style="flex:1;background:var(--bg3);border-radius:12px;padding:12px;text-align:center;cursor:pointer;border:1.5px solid transparent;transition:all 0.2s">
-          <div style="font-size:10px;color:var(--text3);margin-bottom:3px">1</div><div style="font-size:17px;font-weight:700;color:var(--gold)">${m.h}</div>
-        </div>
-        <div class="feat-odd" onclick="featOdd(this,'Remíza','X',${m.d},'${m.home} vs ${m.away}')" style="flex:1;background:var(--bg3);border-radius:12px;padding:12px;text-align:center;cursor:pointer;border:1.5px solid transparent;transition:all 0.2s">
-          <div style="font-size:10px;color:var(--text3);margin-bottom:3px">X</div><div style="font-size:17px;font-weight:700;color:var(--gold)">${m.d}</div>
-        </div>
-        <div class="feat-odd" onclick="featOdd(this,'${m.away} vyhraje','2',${m.a},'${m.home} vs ${m.away}')" style="flex:1;background:var(--bg3);border-radius:12px;padding:12px;text-align:center;cursor:pointer;border:1.5px solid transparent;transition:all 0.2s">
-          <div style="font-size:10px;color:var(--text3);margin-bottom:3px">2</div><div style="font-size:17px;font-weight:700;color:var(--gold)">${m.a}</div>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="font-size:11px;color:var(--text3)">🤖 AI:</div>
-        <div style="flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden"><div style="width:${ai.conf}%;height:100%;background:linear-gradient(90deg,var(--gold-dark),var(--gold));border-radius:2px"></div></div>
-        <div style="font-size:13px;font-weight:700;color:var(--gold)">${ai.conf}%</div>
-        <div style="font-size:11px;color:var(--text2)">${ai.label}</div>
-      </div>
-    </div>`;
-  }).join('');
-  buildDots();
-  initSwipe();
-  // Live timer
-  let sec=73*60+21;
-  setInterval(()=>{sec++;const el=document.getElementById('ctimer-0');if(el){const m=Math.floor(sec/60),s=sec%60;el.textContent=m+':'+(s<10?'0':'')+s;}},1000);
-}
-
-function buildDots(){
-  const dots=document.getElementById('carousel-dots');
-  dots.innerHTML=featMatches.map((_,i)=>`<div onclick="goSlide(${i})" style="width:${i===carIdx?'20px':'6px'};height:6px;background:${i===carIdx?'var(--gold)':'var(--bg4)'};border-radius:3px;transition:all 0.3s;cursor:pointer"></div>`).join('');
-}
+let carSlideCount=0;
 
 function goSlide(idx){
   const wrap=document.getElementById('carousel-wrap');
-  const W=wrap.offsetWidth||358;
-  carIdx=Math.max(0,Math.min(idx,featMatches.length-1));
+  const W=wrap.offsetWidth||document.body.offsetWidth-32;
+  carIdx=Math.max(0,Math.min(idx,carSlideCount-1));
   document.getElementById('carousel').style.transform=`translateX(-${carIdx*W}px)`;
-  buildDots();
+  // Update dots
+  document.querySelectorAll('#carousel-dots div').forEach((d,i)=>{
+    d.style.width=i===carIdx?'20px':'6px';
+    d.style.background=i===carIdx?'var(--gold)':'var(--bg4)';
+  });
+  // Update AI badge
+  const slides=document.querySelectorAll('#carousel .car-slide');
+  if(slides[carIdx]){
+    const conf=slides[carIdx].dataset.conf;
+    const label=slides[carIdx].dataset.label;
+    const el1=document.getElementById('ai-pick-title');
+    const el2=document.getElementById('ai-pct-main');
+    if(el1)el1.textContent=label;
+    if(el2)el2.textContent=conf+'%';
+  }
 }
 
 function initSwipe(){
   const car=document.getElementById('carousel');
   const wrap=document.getElementById('carousel-wrap');
-  let sx=0,sy=0,dragging=false,startT=0;
-  wrap.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;dragging=true;startT=Date.now();},{passive:true});
+  if(!wrap)return;
+  let sx=0,sy=0,dragging=false;
+  wrap.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;dragging=true;},{passive:true});
   wrap.addEventListener('touchmove',e=>{
     if(!dragging)return;
     const dx=e.touches[0].clientX-sx;
     const dy=e.touches[0].clientY-sy;
-    if(Math.abs(dx)>Math.abs(dy)){e.preventDefault();
-      const W=wrap.offsetWidth||358;
+    if(Math.abs(dx)>Math.abs(dy)){
+      e.preventDefault();
+      const W=wrap.offsetWidth||document.body.offsetWidth-32;
       car.style.transition='none';
       car.style.transform=`translateX(${-carIdx*W+dx}px)`;
     }
@@ -787,15 +848,15 @@ function initSwipe(){
   wrap.addEventListener('touchend',e=>{
     if(!dragging)return;dragging=false;
     const dx=e.changedTouches[0].clientX-sx;
-    const W=wrap.offsetWidth||358;
     car.style.transition='transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)';
-    if(dx<-40)goSlide(carIdx+1);
-    else if(dx>40)goSlide(carIdx-1);
+    if(dx<-50)goSlide(carIdx+1);
+    else if(dx>50)goSlide(carIdx-1);
     else goSlide(carIdx);
   },{passive:true});
 }
 
-buildCarousel();
+// Init swipe once
+initSwipe();
 
 // SEE ALL - load more matches
 document.querySelector('.see-all').addEventListener('click',()=>{
@@ -804,7 +865,7 @@ document.querySelector('.see-all').addEventListener('click',()=>{
   if(cards.length>0){
     // Already showing - load without limit
     const sport=S.sport;
-    const map={football:'soccer_epl',basketball:'basketball_nba',tennis:'tennis_atp_french_open',hockey:'icehockey_nhl',americanfootball_nfl:'americanfootball_nfl',baseball:'baseball_mlb',mma:'mma_mixed_martial_arts'};
+    const map={football:'soccer_brazil_campeonato',basketball:'basketball_nba',tennis:'tennis_atp_french_open',hockey:'icehockey_nhl',americanfootball_nfl:'americanfootball_nfl',baseball:'baseball_mlb',mma:'mma_mixed_martial_arts'};
     const key=map[sport]||sport;
     fetch(`https://api.the-odds-api.com/v4/sports/${key}/odds/?apiKey=${ODDS_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`)
       .then(r=>r.json()).then(data=>{
