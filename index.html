@@ -237,28 +237,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
   <!-- SCREENS -->
   <!-- MATCHES -->
   <div class="scroll active" id="sc-matches">
-    <!-- Featured -->
-    <div class="featured" id="featured-panel">
-      <div class="feat-label"><span class="ldot"></span>Live zápas</div>
-      <div class="feat-teams">
-        <div class="feat-team"><div class="feat-flag">🇫🇷</div><div class="feat-name">France</div></div>
-        <div class="feat-score-block">
-          <div class="feat-score" id="feat-score">2:0</div>
-          <div class="feat-time" id="feat-timer">73:21</div>
-        </div>
-        <div class="feat-team"><div class="feat-flag">🇩🇪</div><div class="feat-name">Germany</div></div>
+    <!-- Featured Carousel -->
+    <div style="margin:0 16px 12px;position:relative;overflow:hidden;border-radius:20px" id="carousel-wrap">
+      <div id="carousel" style="display:flex;transition:transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94);will-change:transform">
+        <!-- Cards injected by JS -->
       </div>
-      <div class="feat-odds">
-        <div class="feat-odd sel" onclick="featOdd(this,'France vyhraje','1',1.89,'France vs Germany')">
-          <div class="fo-label">1</div><div class="fo-val">1.89</div>
-        </div>
-        <div class="feat-odd" onclick="featOdd(this,'Remíza','X',5.12,'France vs Germany')">
-          <div class="fo-label">X</div><div class="fo-val">5.12</div>
-        </div>
-        <div class="feat-odd" onclick="featOdd(this,'Germany vyhraje','2',2.50,'France vs Germany')">
-          <div class="fo-label">2</div><div class="fo-val">2.50</div>
-        </div>
-      </div>
+      <div id="carousel-dots" style="display:flex;justify-content:center;gap:6px;margin-top:10px;padding-bottom:4px"></div>
     </div>
 
     <!-- AI Badge -->
@@ -405,9 +389,7 @@ let S={balance:10000,bets:[],tx:[],sport:'football',filter:'live',selBet:null};
 try{const d=localStorage.getItem('gb3');if(d){const p=JSON.parse(d);S={...S,...p};}}catch(e){}
 function save(){try{localStorage.setItem('gb3',JSON.stringify(S));}catch(e){}}
 
-// CLOCK
-let featSec=73*60+21;
-setInterval(()=>{featSec++;const m=Math.floor(featSec/60),s=featSec%60;const el=document.getElementById('feat-timer');if(el)el.textContent=m+':'+(s<10?'0':'')+s;},1000);
+// CLOCK removed - handled in carousel
 
 // AI - improved algorithm
 function aiCalc(homeOdd,drawOdd,awayOdd){
@@ -713,19 +695,107 @@ function showToast(msg,type){
 // INIT
 updBalUI();updQuickStats();loadMatches();
 
-// SWIPE on featured panel
-(function(){
-  const fp=document.getElementById('featured-panel');
-  let sx=0,sy=0;
-  fp.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
-  fp.addEventListener('touchend',e=>{
-    const dx=e.changedTouches[0].clientX-sx;
-    const dy=e.changedTouches[0].clientY-sy;
-    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>40){
-      showToast(dx<0?'Načítám další zápas →':'← Předchozí zápas');
+// CAROUSEL
+const featMatches=[
+  {home:'France',away:'Germany',hflag:'🇫🇷',aflag:'🇩🇪',score:'2:0',time:'live',elapsed:0,h:1.89,d:5.12,a:2.50},
+  {home:'Real Madrid',away:'Barcelona',hflag:'🇪🇸',aflag:'🇪🇸',score:null,time:'20:45',elapsed:null,h:2.10,d:3.40,a:3.20},
+  {home:'Man City',away:'Arsenal',hflag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',aflag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',score:null,time:'18:30',elapsed:null,h:1.75,d:3.60,a:4.50},
+];
+let carIdx=0;
+let carTimer=null;
+
+function buildCarousel(){
+  const car=document.getElementById('carousel');
+  const wrap=document.getElementById('carousel-wrap');
+  const W=wrap.offsetWidth||358;
+  car.innerHTML=featMatches.map((m,i)=>{
+    const ai=aiCalc(m.h,m.d,m.a);
+    const isLive=m.time==='live';
+    return`<div style="min-width:${W}px;background:linear-gradient(145deg,#1E1A0E,#1A1A1A);border-radius:20px;padding:20px;border:1px solid rgba(245,166,35,0.2);position:relative;overflow:hidden;box-sizing:border-box">
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:${isLive?'#FF4444':'var(--gold)'};text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">
+        ${isLive?'<span class="ldot"></span>Live zápas':'⏰ '+m.time}
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1">
+          <div style="font-size:38px">${m.hflag}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text2)">${m.home}</div>
+        </div>
+        <div style="text-align:center">
+          ${m.score?`<div style="font-family:'Bebas Neue',sans-serif;font-size:52px;line-height:1;letter-spacing:3px">${m.score}</div>`
+          :`<div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--text3)">vs</div>`}
+          ${isLive?`<div id="ctimer-${i}" style="font-size:13px;color:var(--gold);font-weight:600;margin-top:4px">73:21</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1">
+          <div style="font-size:38px">${m.aflag}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text2)">${m.away}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <div class="feat-odd" onclick="featOdd(this,'${m.home} vyhraje','1',${m.h},'${m.home} vs ${m.away}')" style="flex:1;background:var(--bg3);border-radius:12px;padding:12px;text-align:center;cursor:pointer;border:1.5px solid transparent;transition:all 0.2s">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:3px">1</div><div style="font-size:17px;font-weight:700;color:var(--gold)">${m.h}</div>
+        </div>
+        <div class="feat-odd" onclick="featOdd(this,'Remíza','X',${m.d},'${m.home} vs ${m.away}')" style="flex:1;background:var(--bg3);border-radius:12px;padding:12px;text-align:center;cursor:pointer;border:1.5px solid transparent;transition:all 0.2s">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:3px">X</div><div style="font-size:17px;font-weight:700;color:var(--gold)">${m.d}</div>
+        </div>
+        <div class="feat-odd" onclick="featOdd(this,'${m.away} vyhraje','2',${m.a},'${m.home} vs ${m.away}')" style="flex:1;background:var(--bg3);border-radius:12px;padding:12px;text-align:center;cursor:pointer;border:1.5px solid transparent;transition:all 0.2s">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:3px">2</div><div style="font-size:17px;font-weight:700;color:var(--gold)">${m.a}</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-size:11px;color:var(--text3)">🤖 AI:</div>
+        <div style="flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden"><div style="width:${ai.conf}%;height:100%;background:linear-gradient(90deg,var(--gold-dark),var(--gold));border-radius:2px"></div></div>
+        <div style="font-size:13px;font-weight:700;color:var(--gold)">${ai.conf}%</div>
+        <div style="font-size:11px;color:var(--text2)">${ai.label}</div>
+      </div>
+    </div>`;
+  }).join('');
+  buildDots();
+  initSwipe();
+  // Live timer
+  let sec=73*60+21;
+  setInterval(()=>{sec++;const el=document.getElementById('ctimer-0');if(el){const m=Math.floor(sec/60),s=sec%60;el.textContent=m+':'+(s<10?'0':'')+s;}},1000);
+}
+
+function buildDots(){
+  const dots=document.getElementById('carousel-dots');
+  dots.innerHTML=featMatches.map((_,i)=>`<div onclick="goSlide(${i})" style="width:${i===carIdx?'20px':'6px'};height:6px;background:${i===carIdx?'var(--gold)':'var(--bg4)'};border-radius:3px;transition:all 0.3s;cursor:pointer"></div>`).join('');
+}
+
+function goSlide(idx){
+  const wrap=document.getElementById('carousel-wrap');
+  const W=wrap.offsetWidth||358;
+  carIdx=Math.max(0,Math.min(idx,featMatches.length-1));
+  document.getElementById('carousel').style.transform=`translateX(-${carIdx*W}px)`;
+  buildDots();
+}
+
+function initSwipe(){
+  const car=document.getElementById('carousel');
+  const wrap=document.getElementById('carousel-wrap');
+  let sx=0,sy=0,dragging=false,startT=0;
+  wrap.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;dragging=true;startT=Date.now();},{passive:true});
+  wrap.addEventListener('touchmove',e=>{
+    if(!dragging)return;
+    const dx=e.touches[0].clientX-sx;
+    const dy=e.touches[0].clientY-sy;
+    if(Math.abs(dx)>Math.abs(dy)){e.preventDefault();
+      const W=wrap.offsetWidth||358;
+      car.style.transition='none';
+      car.style.transform=`translateX(${-carIdx*W+dx}px)`;
     }
+  },{passive:false});
+  wrap.addEventListener('touchend',e=>{
+    if(!dragging)return;dragging=false;
+    const dx=e.changedTouches[0].clientX-sx;
+    const W=wrap.offsetWidth||358;
+    car.style.transition='transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)';
+    if(dx<-40)goSlide(carIdx+1);
+    else if(dx>40)goSlide(carIdx-1);
+    else goSlide(carIdx);
   },{passive:true});
-})();
+}
+
+buildCarousel();
 
 // SEE ALL - load more matches
 document.querySelector('.see-all').addEventListener('click',()=>{
