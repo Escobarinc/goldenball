@@ -196,7 +196,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
   <div class="hdr">
     <div class="logo"><div class="logo-ball">⚽</div>GOLDENBALL</div>
     <div style="display:flex;align-items:center;gap:10px">
-      <div class="wallet" onclick="showScreen('wallet')">🪙 <span id="bal-hdr">10 000</span> Kč</div>
+      <div class="wallet" onclick="showScreen('wallet',document.querySelectorAll('.nb')[3])">🪙 <span id="bal-hdr">10 000</span> Kč</div>
       <div class="avatar">M</div>
     </div>
   </div>
@@ -543,7 +543,7 @@ function getLogoUrl(name) {
     'red bull bragantino':S2+'1999/image','rb bragantino':S2+'1999/image',
     'bragantino':S2+'1999/image','coritiba':S2+'1956/image',
     'vitoria':S2+'1969/image','vitória':S2+'1969/image',
-    'ceara':S2+'1959/image','remo':S2+'23791/image',
+    'ceara':S2+'1952/image','remo':S2+'23791/image',
     'clube do remo':S2+'23791/image','mirassol':S2+'400318/image',
     'chapecoense':S2+'24028/image','sport':S2+'1967/image',
     'goias':S2+'5985/image','america mineiro':S2+'1951/image',
@@ -629,10 +629,7 @@ function buildCarousel(matches, em) {
           <span style="font-size:24px;line-height:1">${em}</span>
           <div>
             <div style="font-size:14px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:1px">${sportName}</div>
-            <div style="display:flex;align-items:center;gap:4px;margin-top:2px">
-              <span style="width:6px;height:6px;background:var(--live);border-radius:50%;display:inline-block;animation:blink 1.2s infinite"></span>
-              <span style="font-size:10px;color:var(--live);font-weight:700;letter-spacing:0.5px">LIVE</span>
-            </div>
+            \${S.filter==='live'?`<div style="display:flex;align-items:center;gap:4px;margin-top:2px"><span style="width:6px;height:6px;background:var(--live);border-radius:50%;display:inline-block;animation:blink 1.2s infinite"></span><span style="font-size:10px;color:var(--live);font-weight:700;letter-spacing:0.5px">LIVE</span></div>`:''}
           </div>
         </div>
         <div style="text-align:right">
@@ -1006,7 +1003,7 @@ function renderStats() {
     const sb=S.bets.filter(b=>b.sport===sp);if(!sb.length)return'';
     const sw=sb.filter(b=>b.status==='won').length,sl=sb.filter(b=>b.status==='lost').length;
     const swr=(sw+sl)>0?Math.round(sw/(sw+sl)*100):0;
-    return `<div class="sport-bar"><div class="sb-lbl">${SPORT_EM[sp]||'🏆'} ${sp.split('_')[0]}</div><div class="sb-track"><div class="sb-fill" style="width:${swr}%;background:${swr>=50?'var(--green)':'var(--red)'}"></div></div><div class="sb-val" style="color:${swr>=50?'var(--green)':'var(--red')}">${swr}%</div></div>`;
+    return `<div class="sport-bar"><div class="sb-lbl">${SPORT_EM[sp]||'🏆'} ${sp.split('_')[0]}</div><div class="sb-track"><div class="sb-fill" style="width:${swr}%;background:${swr>=50?'var(--green)':'var(--red)'}"></div></div><div class="sb-val" style="color:${swr>=50?'var(--green)':'var(--red)}">${swr}%</div></div>`;
   }).join('')||'<div style="color:var(--text3);font-size:13px">Zatím žádná data</div>';
 }
 
