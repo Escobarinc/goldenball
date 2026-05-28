@@ -203,8 +203,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 
   <!-- FILTER -->
   <div class="filter-row" id="filterRow">
-    <div class="ftab live active" onclick="setFilter(this,'live')"><span class="ldot"></span>Live</div>
-    <div class="ftab" onclick="setFilter(this,'upcoming')">Nadcházející</div>
+    <div class="ftab live" onclick="setFilter(this,'live')"><span class="ldot"></span>Live</div>
+    <div class="ftab active" onclick="setFilter(this,'upcoming')">Nadcházející</div>
     <div class="ftab" onclick="setFilter(this,'today')">Dnes</div>
   </div>
 
@@ -340,7 +340,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 // STATE
 // ═══════════════════════════════════
 const ODDS_KEY = '19150cbc4ede408725cbd605b42a74ae';
-let S = {bal:10000, bets:[], tx:[], sport:'football', filter:'live', sel:null};
+let S = {bal:10000, bets:[], tx:[], sport:'football', filter:'upcoming', sel:null};
 try { const d = localStorage.getItem('gb5'); if(d) S = {...S, ...JSON.parse(d)}; } catch(e){}
 function save() { try { localStorage.setItem('gb5', JSON.stringify(S)); } catch(e){} }
 
@@ -387,12 +387,15 @@ function filterMatches(matches) {
   const ago3h = new Date(now.getTime() - 3*60*60*1000);
 
   if(S.filter === 'live') {
-    // Zápasy které právě probíhají (začaly max 3h zpět, ještě neskončily)
-    const filtered = matches.filter(m => {
+    // Live: zápasy probíhající (max 3h zpět) nebo začínající do 2h
+    const soon2h = new Date(now.getTime() + 2*60*60*1000);
+    const live = matches.filter(m => {
       const t = new Date(m.commence_time);
-      return t <= now && t >= ago3h;
+      return t >= ago3h && t <= soon2h;
     });
-    return filtered;
+    // Pokud nic live, ukaž nejbližší 3 zápasy jako fallback
+    if(live.length) return live;
+    return [...matches].sort((a,b)=>new Date(a.commence_time)-new Date(b.commence_time)).slice(0,3);
   }
   if(S.filter === 'upcoming') {
     // Nadcházející: začínají v příštích 48 hodinách
@@ -417,8 +420,10 @@ function applyFilter() {
   const lb = SPORT_LBL[S.sport] || S.sport;
   const filtered = filterMatches(allMatches);
   if(!filtered.length) {
-    document.getElementById('match-list').innerHTML = `<div class="empty"><div class="empty-ico">${em}</div><div>Žádné zápasy pro tento filtr</div></div>`;
-    document.getElementById('carTrack').innerHTML = `<div class="car-slide" style="width:100%;min-width:100%"><div style="text-align:center;padding:30px;color:var(--text3)">${em}<br>Žádné zápasy</div></div>`;
+    const msgs = {live:'Žádné živé zápasy', upcoming:'Žádné nadcházející (48h)', today:'Dnes žádné zápasy'};
+    const msg = msgs[S.filter]||'Žádné zápasy';
+    document.getElementById('match-list').innerHTML = `<div class="empty"><div class="empty-ico">${em}</div><div>${msg}</div></div>`;
+    document.getElementById('carTrack').innerHTML = `<div class="car-slide" style="width:100%;min-width:100%"><div style="text-align:center;padding:30px;color:var(--text3)">${em}<br>${msg}</div></div>`;
     document.getElementById('carDots').innerHTML = '';
     return;
   }
@@ -752,8 +757,8 @@ async function loadMatches() {
     } catch(e) { continue; }
   }
   if(!allMatches.length) {
-    document.getElementById('match-list').innerHTML = `<div class="empty"><div class="empty-ico">${em}</div><div>Žádné zápasy</div></div>`;
-    document.getElementById('carTrack').innerHTML   = `<div class="car-slide" style="width:100%;min-width:100%"><div style="text-align:center;padding:20px;color:var(--text3)">${em}<br>Žádné zápasy</div></div>`;
+    document.getElementById('match-list').innerHTML = `<div class="empty"><div class="empty-ico">${em}</div><div>Nelze načíst — zkus obnovit stránku</div></div>`;
+    document.getElementById('carTrack').innerHTML   = `<div class="car-slide" style="width:100%;min-width:100%"><div style="text-align:center;padding:20px;color:var(--text3)">${em}<br>Chyba načítání</div></div>`;
     return;
   }
   applyFilter();
