@@ -215,7 +215,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
       <div class="sp" onclick="setSport(this,'hockey')"><div class="sp-icon">🏒</div><div class="sp-label">Hokej</div></div>
       <div class="sp" onclick="setSport(this,'americanfootball_nfl')"><div class="sp-icon">🏈</div><div class="sp-label">NFL</div></div>
       <div class="sp" onclick="setSport(this,'baseball')"><div class="sp-icon">⚾</div><div class="sp-label">Baseball</div></div>
-      <div class="sp" onclick="setSport(this,'mma')"><div class="sp-icon" style="background:#CC0000;border-radius:16px;display:flex;align-items:center;justify-content:center"><span style="font-family:'Bebas Neue',sans-serif;font-size:18px;font-weight:900;color:#fff;letter-spacing:1px">UFC</span></div><div class="sp-label">MMA</div></div>
+      <div class="sp" onclick="setSport(this,'mma')"><div class="sp-icon">🥊</div><div class="sp-label">MMA</div></div>
     </div>
 
     <div class="stats-row">
@@ -459,21 +459,22 @@ function getTeamColor(name){
   return null;
 }
 
-function teamIcon(name,fallback){
-  // 1. Try flag first (for national teams, tennis players, MMA fighters)
+function teamIcon(name,fallback,large){
+  const sz=large?'48px':'36px';const szN=large?48:36;const r=large?'14px':'8px';const fs=large?'14px':'11px';
+  // 1. Try flag first
   const flag=getFlag(name);
-  if(flag)return{html:`<span style="font-size:36px;line-height:1">${flag}</span>`};
+  if(flag)return{html:`<span style="font-size:${large?44:32}px;line-height:1">${flag}</span>`};
   // 2. Try team color logo
   const color=getTeamColor(name);
   const initials=name.trim().split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
   if(color){
-    return{html:`<div style="width:44px;height:44px;background:${color};border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;font-family:'DM Sans',sans-serif;letter-spacing:-0.5px">${initials}</div>`};
+    return{html:`<div style="width:${sz};height:${sz};background:${color};border-radius:${r};display:flex;align-items:center;justify-content:center;font-size:${fs};font-weight:800;color:#fff;font-family:'DM Sans',sans-serif;letter-spacing:-0.5px">${initials}</div>`};
   }
-  // 3. Fallback — sport emoji or UFC logo for MMA
+  // 3. UFC logo for MMA
   if(fallback==='🥊'){
-    return{html:`<div style="width:36px;height:36px;background:#CC0000;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:11px;font-weight:900;color:#fff;letter-spacing:0.5px">UFC</div>`};
+    return{html:`<div style="width:${sz};height:${sz};background:#CC0000;border-radius:${r};display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:${large?'18px':'12px'};font-weight:900;color:#fff;letter-spacing:1px">UFC</div>`};
   }
-  return{html:`<span style="font-size:28px;line-height:1">${fallback}</span>`};
+  return{html:`<span style="font-size:${large?34:28}px;line-height:1">${fallback}</span>`};
 }
 
 // NAV
@@ -522,8 +523,8 @@ function updateCarousel(matches,sport){
     const t=dt.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
     const d=dt.toLocaleDateString('cs',{day:'numeric',month:'numeric'});
     const mt=`${d} ${t}`;
-    const hi=teamIcon(m.home_team,em);
-    const ai2=teamIcon(m.away_team,em);
+    const hi=teamIcon(m.home_team,em,true);
+    const ai2=teamIcon(m.away_team,em,true);
     return`<div class="car-slide" data-conf="${ai.conf}" data-label="${ai.label}" style="min-width:${W}px;width:${W}px">
       <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:14px">⏰ ${d} · ${t}</div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
