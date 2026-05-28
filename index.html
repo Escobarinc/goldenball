@@ -41,7 +41,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 /* CAROUSEL */
 .car-wrap{margin:0 16px 12px;overflow:hidden;border-radius:20px;position:relative}
 .car-track{display:flex;transition:transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)}
-.car-slide{flex-shrink:0;background:linear-gradient(145deg,#1E1A0E,#1A1A1A);border-radius:20px;padding:18px;border:1px solid rgba(245,166,35,0.2)}
+.car-slide{flex-shrink:0;background:linear-gradient(145deg,#1E1A0E,#1A1A1A);border-radius:20px;padding:22px 20px;border:1px solid rgba(245,166,35,0.2);min-height:240px}
 .car-dots{display:flex;justify-content:center;gap:6px;padding:8px 0 2px}
 .cdot{height:6px;background:var(--bg4);border-radius:3px;cursor:pointer;transition:all 0.3s}
 
@@ -490,21 +490,74 @@ function getColor(name) {
   return null;
 }
 
+function getLogoUrl(name) {
+  const n = name.toLowerCase();
+  // Map known clubs to Wikipedia logo URLs (public domain)
+  const logos = {
+    'flamengo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Flamengo_braz_logo.svg/120px-Flamengo_braz_logo.svg.png',
+    'palmeiras': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Palmeiras_logo.svg/120px-Palmeiras_logo.svg.png',
+    'corinthians': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Sport_Club_Corinthians_Paulista_logo.svg/120px-Sport_Club_Corinthians_Paulista_logo.svg.png',
+    'botafogo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Botafogo_de_Futebol_e_Regatas.svg/120px-Botafogo_de_Futebol_e_Regatas.svg.png',
+    'fluminense': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Fluminense_FC_logo.svg/120px-Fluminense_FC_logo.svg.png',
+    'sao paulo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Coat_of_arms_of_S%C3%A3o_Paulo_FC.svg/120px-Coat_of_arms_of_S%C3%A3o_Paulo_FC.svg.png',
+    'santos': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Santos_FC_logo.svg/120px-Santos_FC_logo.svg.png',
+    'gremio': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Gr%C3%AAmio_FB.svg/120px-Gr%C3%AAmio_FB.svg.png',
+    'internacional': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Sport_Club_Internacional.svg/120px-Sport_Club_Internacional.svg.png',
+    'cruzeiro': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Cruzeiro_Esporte_Clube_logo.svg/120px-Cruzeiro_Esporte_Clube_logo.svg.png',
+    'vasco': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Club_de_Regatas_Vasco_da_Gama.svg/120px-Club_de_Regatas_Vasco_da_Gama.svg.png',
+    'atletico mineiro': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Atletico_Mineiro_Full_Logo.svg/120px-Atletico_Mineiro_Full_Logo.svg.png',
+    'fortaleza': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Fortaleza_Esporte_Clube_logo.svg/120px-Fortaleza_Esporte_Clube_logo.svg.png',
+    'athletico paranaense': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Atletico-paranaense-logo.svg/120px-Atletico-paranaense-logo.svg.png',
+    'bragantino': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Red_Bull_Bragantino_logo.svg/120px-Red_Bull_Bragantino_logo.svg.png',
+    'bahia': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Esporte_Clube_Bahia_logo.svg/120px-Esporte_Clube_Bahia_logo.svg.png',
+    // MLS
+    'inter miami': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Inter_Miami_CF_2023_crest.svg/120px-Inter_Miami_CF_2023_crest.svg.png',
+    'la galaxy': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/LA_Galaxy_logo.svg/120px-LA_Galaxy_logo.svg.png',
+    'seattle sounders': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Seattle_Sounders_FC.svg/120px-Seattle_Sounders_FC.svg.png',
+    'new york city': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/New_York_City_FC.svg/120px-New_York_City_FC.svg.png',
+    // Other
+    'barcelona': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/FC_Barcelona_%28crest%29.svg/120px-FC_Barcelona_%28crest%29.svg.png',
+    'real madrid': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Real_Madrid_CF.svg/120px-Real_Madrid_CF.svg.png',
+    'manchester city': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Manchester_City_FC_badge.svg/120px-Manchester_City_FC_badge.svg.png',
+    'arsenal': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Arsenal_FC.svg/120px-Arsenal_FC.svg.png',
+    'liverpool': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Liverpool_FC.svg/120px-Liverpool_FC.svg.png',
+    'chelsea': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Chelsea_FC.svg/120px-Chelsea_FC.svg.png',
+    'juventus': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Juventus_FC_2017_icon_%28black%29.svg/120px-Juventus_FC_2017_icon_%28black%29.svg.png',
+    'inter milan': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/FC_Internazionale_Milano_2021.svg/120px-FC_Internazionale_Milano_2021.svg.png',
+    'ac milan': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Logo_of_AC_Milan.svg/120px-Logo_of_AC_Milan.svg.png',
+    'psg': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Paris_Saint-Germain_F.C..svg/120px-Paris_Saint-Germain_F.C..svg.png',
+    'paris saint-germain': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Paris_Saint-Germain_F.C..svg/120px-Paris_Saint-Germain_F.C..svg.png',
+    // NBA
+    'lakers': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Los_Angeles_Lakers_logo.svg/120px-Los_Angeles_Lakers_logo.svg.png',
+    'warriors': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/GS_Warriors_logo.svg/120px-GS_Warriors_logo.svg.png',
+    'celtics': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Boston_Celtics.svg/120px-Boston_Celtics.svg.png',
+    'heat': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Miami_Heat_logo.svg/120px-Miami_Heat_logo.svg.png',
+    'bulls': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Chicago_Bulls_logo.svg/120px-Chicago_Bulls_logo.svg.png',
+  };
+  for(const [k,v] of Object.entries(logos)) {
+    if(n.includes(k) || k.includes(n.split(' ')[0])) return v;
+  }
+  return null;
+}
+
 function teamIcon(name, fallback, large) {
-  const sz = large ? 44 : 34;
-  const r = large ? 12 : 8;
-  const fs = large ? 13 : 11;
-  // 1. Flag
+  const sz = large ? 52 : 36;
+  const r = large ? 14 : 8;
+  const fs = large ? 14 : 11;
+  // 1. Real logo from Wikipedia
+  const logo = getLogoUrl(name);
+  if(logo) return `<img src="${logo}" style="width:${sz}px;height:${sz}px;object-fit:contain;border-radius:${r}px" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><div style="display:none;width:${sz}px;height:${sz}px;background:${getColor(name)||'var(--bg3)'};border-radius:${r}px;align-items:center;justify-content:center;font-size:${fs}px;font-weight:800;color:#fff">${name.trim().split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase()}</div>`;
+  // 2. Flag
   const flag = getFlag(name);
-  if(flag) return `<span style="font-size:${large?42:30}px;line-height:1">${flag}</span>`;
-  // 2. Club color + initials
+  if(flag) return `<span style="font-size:${large?44:30}px;line-height:1">${flag}</span>`;
+  // 3. Club color + initials
   const color = getColor(name);
   const initials = name.trim().split(' ').filter(w=>w.length>0).map(w=>w[0]).join('').substring(0,2).toUpperCase();
   if(color) return `<div style="width:${sz}px;height:${sz}px;background:${color};border-radius:${r}px;display:flex;align-items:center;justify-content:center;font-size:${fs}px;font-weight:800;color:#fff;font-family:'DM Sans',sans-serif">${initials}</div>`;
-  // 3. UFC for MMA
-  if(fallback === '🥊') return `<div style="width:${sz}px;height:${sz}px;background:#CC0000;border-radius:${r}px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:${large?16:11}px;font-weight:900;color:#fff">UFC</div>`;
-  // 4. Sport emoji
-  return `<span style="font-size:${large?34:26}px;line-height:1">${fallback}</span>`;
+  // 4. UFC for MMA
+  if(fallback==='🥊') return `<div style="width:${sz}px;height:${sz}px;background:#CC0000;border-radius:${r}px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:${large?18:12}px;font-weight:900;color:#fff">UFC</div>`;
+  // 5. Sport emoji
+  return `<span style="font-size:${large?36:26}px;line-height:1">${fallback}</span>`;
 }
 
 // ═══════════════════════════════════
@@ -536,12 +589,14 @@ function buildCarousel(matches, em) {
     const hiA = teamIcon(m.away_team, em, true);
     return `<div class="car-slide" data-conf="${r.conf}" data-label="${r.label}" style="min-width:${W}px;width:${W}px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex:1">${hiH}<div style="font-size:13px;font-weight:600;text-align:center">${hn}</div></div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 10px">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--text3)">VS</div>
-          <div style="font-size:12px;font-weight:700;color:var(--gold)">⏰ ${d} · ${t}</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex:1">${hiH}<div style="font-size:15px;font-weight:700;text-align:center">${hn}</div></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:0 10px">
+          <div style="font-size:28px;line-height:1">${em}</div>
+          <div style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">${SPORT_LBL[S.sport]?.split(' ').slice(1).join(' ')||S.sport}</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--text3)">VS</div>
+          <div style="font-size:13px;font-weight:700;color:var(--gold)">⏰ ${d} · ${t}</div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex:1">${hiA}<div style="font-size:13px;font-weight:600;text-align:center">${an}</div></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex:1">${hiA}<div style="font-size:15px;font-weight:700;text-align:center">${an}</div></div>
       </div>
       <div style="display:flex;gap:8px">
         <div onclick="selBet(this,'${m.id}','${hn} vyhraje','1',${ho},'${hn} vs ${an}','${mt}')" style="flex:1;background:var(--bg3);border-radius:12px;padding:10px;text-align:center;cursor:pointer;border:1.5px solid transparent;transition:all 0.2s">
