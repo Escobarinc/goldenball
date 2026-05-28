@@ -14,8 +14,8 @@
   --green:#2ECC71;--red:#E74C3C;--live:#FF4444;
   --nav:68px;
 }
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
-.app{display:flex;flex-direction:column;height:100vh;width:100%}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden;position:fixed;width:100%}
+.app{display:flex;flex-direction:column;height:100%;width:100%}
 
 /* HEADER */
 .hdr{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 12px;flex-shrink:0;padding-top:max(16px,env(safe-area-inset-top))}
@@ -35,7 +35,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
 
 /* SCROLL */
-.scroll{flex:1;overflow-y:auto;scrollbar-width:none;padding-bottom:calc(var(--nav) + 12px)}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:calc(var(--nav) + 20px)}
 .scroll::-webkit-scrollbar{display:none}
 .scroll{display:none}
 .scroll.active{display:block}
@@ -300,7 +300,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
   </div>
 
   <!-- BETS -->
-  <div class="scroll" id="sc-bets">
+  <div class="scroll" id="sc-bets" style="padding-bottom:calc(var(--nav) + 40px)">
     <div class="sec-head" style="padding-top:16px"><h3>Moje sázky</h3><span id="bets-cnt" style="font-size:12px;color:var(--text3)"></span></div>
     <div id="bets-list"></div>
   </div>
@@ -712,6 +712,74 @@ function showToast(msg,type){
 
 // INIT
 updBalUI();updQuickStats();loadMatches();
+
+// SWIPE on featured panel
+(function(){
+  const fp=document.getElementById('featured-panel');
+  let sx=0,sy=0;
+  fp.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
+  fp.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-sx;
+    const dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>40){
+      showToast(dx<0?'Načítám další zápas →':'← Předchozí zápas');
+    }
+  },{passive:true});
+})();
+
+// SEE ALL - load more matches
+document.querySelector('.see-all').addEventListener('click',()=>{
+  const list=document.getElementById('matches-list');
+  const cards=list.querySelectorAll('.mc');
+  if(cards.length>0){
+    // Already showing - load without limit
+    const sport=S.sport;
+    const map={football:'soccer_epl',basketball:'basketball_nba',tennis:'tennis_atp_french_open',hockey:'icehockey_nhl',americanfootball_nfl:'americanfootball_nfl',baseball:'baseball_mlb',mma:'mma_mixed_martial_arts'};
+    const key=map[sport]||sport;
+    fetch(`https://api.the-odds-api.com/v4/sports/${key}/odds/?apiKey=${ODDS_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`)
+      .then(r=>r.json()).then(data=>{
+        if(Array.isArray(data)&&data.length>12){
+          // Show all
+          const emojis={football:'⚽',basketball:'🏀',tennis:'🎾',hockey:'🏒',americanfootball_nfl:'🏈',baseball:'⚾',mma:'🥊'};
+          const labels={football:'Premier League',basketball:'NBA',tennis:'ATP Roland Garros',hockey:'NHL',americanfootball_nfl:'NFL',baseball:'MLB',mma:'UFC/MMA'};
+          const extra=data.slice(12).map((m,i)=>{
+            const book=m.bookmakers[0],market=book?.markets[0],outs=market?.outcomes||[];
+            const ho=outs.find(o=>o.name===m.home_team)?.price||2;
+            const aw=outs.find(o=>o.name===m.away_team)?.price||2;
+            const dr=outs.find(o=>o.name==='Draw')?.price||3.3;
+            const hasDraw=outs.some(o=>o.name==='Draw');
+            const ai=aiCalc(ho,dr,aw);
+            const hn=m.home_team.length>13?m.home_team.substring(0,13)+'…':m.home_team;
+            const an=m.away_team.length>13?m.away_team.substring(0,13)+'…':m.away_team;
+            const t=new Date(m.commence_time).toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
+            const em=emojis[sport]||'🏆';
+            const lb=labels[sport]||sport;
+            return`<div class="mc" style="animation-delay:${i*0.04}s">
+              <div class="mc-top"><div class="mc-league">${em} ${lb}</div><div class="mc-badge">${t}</div></div>
+              <div class="mc-teams">
+                <div class="mc-team"><div class="mc-tb">${em}</div><div class="mc-tn">${hn}</div></div>
+                <div class="mc-vs">vs</div>
+                <div class="mc-team away"><div class="mc-tn">${an}</div><div class="mc-tb">${em}</div></div>
+              </div>
+              <div class="mc-odds">
+                <div class="mc-odd" onclick="selBet(this,'${m.id}','${hn} vyhraje','1',${ho.toFixed(2)},'${hn} vs ${an}')"><div class="mo-label">1</div><div class="mo-val">${ho.toFixed(2)}</div></div>
+                ${hasDraw?`<div class="mc-odd" onclick="selBet(this,'${m.id}','Remíza','X',${dr.toFixed(2)},'${hn} vs ${an}')"><div class="mo-label">X</div><div class="mo-val">${dr.toFixed(2)}</div></div>`:''}
+                <div class="mc-odd" onclick="selBet(this,'${m.id}','${an} vyhraje','2',${aw.toFixed(2)},'${hn} vs ${an}')"><div class="mo-label">2</div><div class="mo-val">${aw.toFixed(2)}</div></div>
+              </div>
+              <div class="mc-ai">
+                <div class="mc-ai-label">🤖 AI:</div>
+                <div class="mc-ai-bar"><div class="mc-ai-fill" style="width:${ai.conf}%"></div></div>
+                <div class="mc-ai-pct">${ai.conf}%</div>
+                <div class="mc-ai-tip">${ai.label}</div>
+              </div>
+            </div>`;
+          }).join('');
+          list.insertAdjacentHTML('beforeend',extra);
+          showToast('Načteno všech '+data.length+' zápasů','green');
+        } else showToast('Žádné další zápasy');
+      }).catch(()=>showToast('Nelze načíst další zápasy'));
+  }
+});
 </script>
 </body>
 </html>
