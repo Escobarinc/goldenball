@@ -164,6 +164,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 .loading{text-align:center;padding:40px 20px;color:var(--text3)}
 .spinner{width:36px;height:36px;border:3px solid var(--bg3);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .api-err{margin:0 16px 10px;background:rgba(231,76,60,0.08);border:1px solid rgba(231,76,60,0.2);border-radius:12px;padding:12px 16px;font-size:12px;color:var(--red)}
 .feat-odd{transition:all 0.2s;border:1.5px solid transparent}
 .feat-odd.sel,.feat-odd:hover{border-color:var(--gold)!important;background:rgba(245,166,35,0.15)!important}
@@ -526,13 +528,15 @@ function updateCarousel(matches,sport){
     const hi=teamIcon(m.home_team,em,true);
     const ai2=teamIcon(m.away_team,em,true);
     return`<div class="car-slide" data-conf="${ai.conf}" data-label="${ai.label}" style="min-width:${W}px;width:${W}px">
-      <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:14px">⏰ ${d} · ${t}</div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
         <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex:1">
           ${hi.html}
           <div style="font-size:13px;font-weight:600;text-align:center">${hn}</div>
         </div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--text3);padding:0 8px">VS</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 8px">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--text3)">VS</div>
+          <div style="font-size:12px;font-weight:700;color:var(--gold)">⏰ ${d} · ${t}</div>
+        </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex:1">
           ${ai2.html}
           <div style="font-size:13px;font-weight:600;text-align:center">${an}</div>
@@ -642,7 +646,18 @@ async function loadMatches(){
     return;
   }
   updateCarousel(all.slice(0,6),S.sport);
-  list.innerHTML=all.slice(0,14).map((m,i)=>{
+  const leagueFlag={
+    'soccer_brazil_campeonato':'🇧🇷','soccer_usa_mls':'🇺🇸',
+    'soccer_turkey_super_league':'🇹🇷','soccer_netherlands_eredivisie':'🇳🇱',
+    'soccer_argentina_primera_division':'🇦🇷','soccer_mexico_ligamx':'🇲🇽',
+    'soccer_conmebol_copa_libertadores':'🌎','soccer_sweden_allsvenskan':'🇸🇪',
+    'soccer_norway_eliteserien':'🇳🇴','soccer_denmark_superliga':'🇩🇰',
+    'tennis_atp_french_open':'🇫🇷','tennis_wta_french_open':'🇫🇷',
+    'basketball_nba':'🇺🇸','icehockey_nhl':'🇺🇸',
+    'americanfootball_nfl':'🇺🇸','baseball_mlb':'🇺🇸',
+    'mma_mixed_martial_arts':'🥊',
+  };
+  const lf=leagueFlag[S.sport]||'🏆';
     const book=m.bookmakers[0],outs=book?.markets[0]?.outcomes||[];
     const ho=+(outs.find(o=>o.name===m.home_team)?.price||2).toFixed(2);
     const aw=+(outs.find(o=>o.name===m.away_team)?.price||2).toFixed(2);
@@ -658,11 +673,20 @@ async function loadMatches(){
     const hi=teamIcon(m.home_team,em);
     const ai2=teamIcon(m.away_team,em);
     return`<div class="mc" style="animation-delay:${i*0.04}s">
-      <div class="mc-top"><div class="mc-league">${em} ${lb}</div><div class="mc-badge">${t} · ${d}</div></div>
+      <div class="mc-top"><div class="mc-league">${lf} ${lb}</div><div class="mc-badge">${t} · ${d}</div></div>
       <div class="mc-teams">
-        <div class="mc-team"><div class="mc-tb">${hi.html}</div><div class="mc-tn">${hn}</div></div>
-        <div class="mc-vs">vs</div>
-        <div class="mc-team away"><div class="mc-tn">${an}</div><div class="mc-tb">${ai2.html}</div></div>
+        <div class="mc-team" style="flex-direction:column;align-items:center;gap:6px;text-align:center">
+          <div class="mc-tb">${hi.html}</div>
+          <div class="mc-tn">${hn}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div class="mc-vs">vs</div>
+          <div style="font-size:11px;font-weight:600;color:var(--gold)">${t}</div>
+        </div>
+        <div class="mc-team away" style="flex-direction:column;align-items:center;gap:6px;text-align:center">
+          <div class="mc-tb">${ai2.html}</div>
+          <div class="mc-tn">${an}</div>
+        </div>
       </div>
       <div class="mc-odds">
         <div class="mc-odd" onclick="selBet(this,'${m.id}','${hn} vyhraje','1',${ho},'${hn} vs ${an}','${mt}')"><div class="mo-label">1</div><div class="mo-val">${ho}</div></div>
@@ -725,6 +749,22 @@ function placeBet(){
   showToast(`✓ Vsazeno ${stake} Kč na ${b.pickLabel}`,'green');
 }
 
+// WIN CELEBRATION
+function showWinCelebration(bet){
+  const el=document.createElement('div');
+  el.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:fadeIn 0.3s ease';
+  el.innerHTML=`
+    <div style="font-size:80px;margin-bottom:20px;animation:bounce 0.6s ease">🏆</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--gold);letter-spacing:2px;margin-bottom:8px">VÝHRA!</div>
+    <div style="font-size:16px;color:var(--text2);margin-bottom:16px">${bet.matchName}</div>
+    <div style="font-size:14px;color:var(--text3);margin-bottom:24px">${bet.pickLabel}</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:56px;color:var(--green);margin-bottom:32px">+${bet.potential.toLocaleString('cs')} Kč</div>
+    <button onclick="this.parentElement.remove()" style="background:var(--gold);color:#111;font-weight:700;font-size:16px;padding:14px 40px;border-radius:14px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif">Skvělé! 🎉</button>
+  `;
+  document.body.appendChild(el);
+  el.addEventListener('click',e=>{if(e.target===el)el.remove();});
+}
+
 // AUTO SETTLE
 function autoSettle(){
   const now=Date.now();let changed=false;
@@ -737,8 +777,13 @@ function autoSettle(){
       if(now<matchDate.getTime()+(60*60*1000))return;
       const res=b.odd<=2.5?(Math.random()<0.65?'won':'lost'):(Math.random()<0.40?'won':'lost');
       b.status=res;
-      if(res==='won'){S.balance+=b.potential;S.tx.unshift({type:'win',amount:b.potential,desc:b.matchName,date:new Date().toLocaleString('cs')});}
-      else{S.tx.unshift({type:'loss',amount:-b.stake,desc:b.matchName,date:new Date().toLocaleString('cs')});}
+      if(res==='won'){
+        S.balance+=b.potential;
+        S.tx.unshift({type:'win',amount:b.potential,desc:b.matchName,date:new Date().toLocaleString('cs')});
+        setTimeout(()=>showWinCelebration(b),300);
+      } else {
+        S.tx.unshift({type:'loss',amount:-b.stake,desc:b.matchName,date:new Date().toLocaleString('cs')});
+      }
       changed=true;
     }catch(e){}
   });
