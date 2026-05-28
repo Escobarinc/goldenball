@@ -1003,7 +1003,7 @@ function renderStats() {
     const sb=S.bets.filter(b=>b.sport===sp);if(!sb.length)return'';
     const sw=sb.filter(b=>b.status==='won').length,sl=sb.filter(b=>b.status==='lost').length;
     const swr=(sw+sl)>0?Math.round(sw/(sw+sl)*100):0;
-    return `<div class="sport-bar"><div class="sb-lbl">${SPORT_EM[sp]||'🏆'} ${sp.split('_')[0]}</div><div class="sb-track"><div class="sb-fill" style="width:${swr}%;background:${swr>=50?'var(--green)':'var(--red)'}"></div></div><div class="sb-val" style="color:${swr>=50?'var(--green)':'var(--red)}">${swr}%</div></div>`;
+    return `<div class="sport-bar"><div class="sb-lbl">${SPORT_EM[sp]||'🏆'} ${sp.split('_')[0]}</div><div class="sb-track"><div class="sb-fill" style="width:${swr}%;background:${swr>=50?'var(--green)':'var(--red)'}"></div></div><div class="sb-val" style="color:${swr>=50?'var(--green)':'var(--red)'}">${swr}%</div></div>`;
   }).join('')||'<div style="color:var(--text3);font-size:13px">Zatím žádná data</div>';
 }
 
