@@ -392,21 +392,22 @@ function save(){try{localStorage.setItem('gb3',JSON.stringify(S));}catch(e){}}
 // CLOCK removed - handled in carousel
 
 // AI - improved algorithm
-function aiCalc(homeOdd,drawOdd,awayOdd){
+function aiCalc(homeOdd,drawOdd,awayOdd,homeName,awayName){
   const ho=parseFloat(homeOdd)||2,dr=parseFloat(drawOdd)||3.3,aw=parseFloat(awayOdd)||3;
   const rh=1/ho,rd=1/dr,ra=1/aw,tot=rh+rd+ra;
   const ph=rh/tot,pd=rd/tot,pa=ra/tot;
   const max=Math.max(ph,pd,pa);
-  // Add variance based on odds spread
   const spread=Math.abs(ho-aw);
   const bonus=Math.min(spread*3,12);
   const raw=max*100+bonus;
   const noise=(Math.random()-0.5)*8;
   const conf=Math.min(Math.max(Math.round(raw+noise),52),87);
   let pick,label;
-  if(max===ph){pick='1';label='Domácí vyhrají';}
+  const hn=homeName?homeName.replace('…','').trim():'Domácí';
+  const an=awayName?awayName.replace('…','').trim():'Hosté';
+  if(max===ph){pick='1';label=hn+' vyhraje';}
   else if(max===pd){pick='X';label='Remíza';}
-  else{pick='2';label='Hosté vyhrají';}
+  else{pick='2';label=an+' vyhraje';}
   return{conf,pick,label};
 }
 
@@ -480,7 +481,7 @@ function renderFootball(matches){
     const ho=+(1.5+seed*2).toFixed(2);
     const aw=+(1.5+(1-seed)*2).toFixed(2);
     const dr=+(2.8+seed*0.8).toFixed(2);
-    const ai=aiCalc(ho,dr,aw);
+    const hn0=h.name.length>13?h.name.substring(0,13)+"…":h.name;const an0=a.name.length>13?a.name.substring(0,13)+"…":a.name;const ai=aiCalc(ho,dr,aw,hn0,an0);
     const score=g.home!==null?`${g.home}:${g.away}`:null;
     const hn=h.name.length>13?h.name.substring(0,13)+'…':h.name;
     const an=a.name.length>13?a.name.substring(0,13)+'…':a.name;
@@ -574,7 +575,7 @@ async function fetchOdds(sport){
     const aw=outs.find(o=>o.name===m.away_team)?.price||2;
     const dr=outs.find(o=>o.name==='Draw')?.price||3.3;
     const hasDraw=outs.some(o=>o.name==='Draw');
-    const ai=aiCalc(ho,dr,aw);
+    const ai=aiCalc(ho,dr,aw,m.home_team,m.away_team);
     const hn=m.home_team.length>13?m.home_team.substring(0,13)+'…':m.home_team;
     const an=m.away_team.length>13?m.away_team.substring(0,13)+'…':m.away_team;
     const dt=new Date(m.commence_time);
@@ -607,6 +608,107 @@ async function fetchOdds(sport){
 }
 
 // UPDATE CAROUSEL with real API data
+// Country/team flag mapping
+function getFlag(teamName){
+  const name=teamName.toLowerCase().trim();
+  const flags={
+    // === TENIS ATP/WTA - kompletní seznam ===
+    'sinner':'🇮🇹','alcaraz':'🇪🇸','djokovic':'🇷🇸','medvedev':'🇷🇺',
+    'zverev':'🇩🇪','tsitsipas':'🇬🇷','rublev':'🇷🇺','hurkacz':'🇵🇱',
+    'fritz':'🇺🇸','de minaur':'🇦🇺','dimitrov':'🇧🇬','khachanov':'🇷🇺',
+    'paul':'🇺🇸','shelton':'🇺🇸','tiafoe':'🇺🇸','norrie':'🇬🇧',
+    'ruud':'🇳🇴','casper':'🇳🇴','berrettini':'🇮🇹','musetti':'🇮🇹',
+    'sonego':'🇮🇹','arnaldi':'🇮🇹','cobolli':'🇮🇹','flavio':'🇮🇹',
+    'rune':'🇩🇰','holger':'🇩🇰','draper':'🇬🇧','jack':'🇬🇧',
+    'auger':'🇨🇦','shapovalov':'🇨🇦','raonic':'🇨🇦',
+    'thiem':'🇦🇹','struff':'🇩🇪','koepfer':'🇩🇪','hanfmann':'🇩🇪',
+    'bublik':'🇰🇿','kukushkin':'🇰🇿',
+    'monfils':'🇫🇷','gasquet':'🇫🇷','simon':'🇫🇷','rinderknech':'🇫🇷',
+    'mpetshi':'🇫🇷','perricard':'🇫🇷','hugo':'🇫🇷',
+    'nadal':'🇪🇸','bautista':'🇪🇸','davidovich':'🇪🇸','munar':'🇪🇸',
+    'zapata':'🇪🇸','granollers':'🇪🇸','verdasco':'🇪🇸',
+    'fognini':'🇮🇹','travaglia':'🇮🇹','cecchinato':'🇮🇹',
+    'cilic':'🇭🇷','coric':'🇭🇷','gojo':'🇭🇷',
+    'basilashvili':'🇬🇪','metreveli':'🇬🇪',
+    'wawrinka':'🇨🇭','federer':'🇨🇭','stricker':'🇨🇭',
+    'murray':'🇬🇧','edmund':'🇬🇧','broady':'🇬🇧',
+    'isner':'🇺🇸','opelka':'🇺🇸','sock':'🇺🇸','querrey':'🇺🇸',
+    'kyrgios':'🇦🇺','tomljanovic':'🇦🇺','bolt':'🇦🇺','duckworth':'🇦🇺',
+    'popyrin':'🇦🇺','walton':'🇦🇺','adam':'🇦🇺',
+    'zhu':'🇨🇳','zhang':'🇨🇳','wu':'🇨🇳','yibing':'🇨🇳',
+    'mmoh':'🇺🇸','kozlov':'🇺🇸','daniel':'🇯🇵','nishioka':'🇯🇵',
+    'korda':'🇺🇸','nakashima':'🇺🇸','eubanks':'🇺🇸',
+    'baez':'🇦🇷','cerundolo':'🇦🇷','francisco':'🇦🇷','facundo':'🇦🇷',
+    'etcheverry':'🇦🇷','diaz':'🇦🇷','acasuso':'🇦🇷',
+    'jarry':'🇨🇱','garin':'🇨🇱','tabilo':'🇨🇱',
+    'monteiro':'🇧🇷','fonseca':'🇧🇷','seyboth':'🇧🇷',
+    'svajda':'🇺🇸','zachary':'🇺🇸','learner':'🇺🇸','tien':'🇺🇸',
+    'van de zandschulp':'🇳🇱','van assche':'🇫🇷','luca':'🇫🇷',
+    'gaston':'🇫🇷','hugo gaston':'🇫🇷',
+    'martin':'🇸🇰','kecmanovic':'🇷🇸','krajinovic':'🇷🇸',
+    'lucas':'🇧🇷','fernand':'🇧🇷',
+    // WTA
+    'swiatek':'🇵🇱','sabalenka':'🇧🇾','gauff':'🇺🇸','coco':'🇺🇸',
+    'keys':'🇺🇸','madison':'🇺🇸','pegula':'🇺🇸','jessica':'🇺🇸',
+    'jabeur':'🇹🇳','garcia':'🇫🇷','caroline':'🇫🇷',
+    'kontaveit':'🇪🇪','anett':'🇪🇪','kvitova':'🇨🇿','petra':'🇨🇿',
+    'pliskova':'🇨🇿','muchova':'🇨🇿','vondrousova':'🇨🇿','marketa':'🇨🇿',
+    'halep':'🇷🇴','andreescu':'🇨🇦','bianca':'🇨🇦',
+    'osaka':'🇯🇵','naomi':'🇯🇵','niemeier':'🇩🇪',
+    // === FOTBAL - brazilské kluby ===
+    'atletico paranaense':'🔴','paranaense':'🔴',
+    'atletico mineiro':'⚫','atletico goianiense':'🔴',
+    'flamengo':'🔴','flamingo':'🔴',
+    'palmeiras':'🟢','santos':'⚪','corinthians':'⚫',
+    'sao paulo':'🔴','fluminense':'🟢','botafogo':'⚫',
+    'vasco':'⚫','cruzeiro':'🔵','bragantino':'🔴',
+    'internacional':'🔴','gremio':'🔵','fortaleza':'🔵',
+    'mirassol':'🟡','america':'🔴','ceara':'⚫',
+    'bahia':'🔵','sport':'🔴','vitoria':'🔴',
+    'cuiaba':'🟡','goias':'🟢','coritiba':'🟢',
+    // === NBA ===
+    'lakers':'🟡','warriors':'🔵','celtics':'🟢','bulls':'🔴',
+    'heat':'🔴','nets':'⚫','knicks':'🔵','76ers':'🔵',
+    'bucks':'🟢','suns':'🟠','nuggets':'🟡','thunder':'🔵',
+    'grizzlies':'🔵','spurs':'⚫','mavericks':'🔵','mavs':'🔵',
+    'clippers':'🔴','rockets':'🔴','jazz':'🟡','kings':'🟣',
+    'oklahoma':'🔵','san antonio':'⚫','golden state':'🔵',
+    'los angeles lakers':'🟡','boston':'🟢','miami':'🔴',
+    'toronto':'🔴','raptors':'🔴','hawks':'🔴','atlanta':'🔴',
+    'cavaliers':'🍷','cleveland':'🍷','pistons':'🔵','detroit':'🔵',
+    'pacers':'🟡','indiana':'🟡','hornets':'🔵','charlotte':'🔵',
+    'wizards':'🔵','washington':'🔵','magic':'🔵','orlando':'🔵',
+    // === NHL ===
+    'bruins':'⚫','canadiens':'🔴','maple leafs':'🔵','rangers':'🔵',
+    'penguins':'⚫','capitals':'🔴','lightning':'🔵','oilers':'🟠',
+    'avalanche':'🔵','golden knights':'🥇','panthers':'🔴','stars':'🟢',
+    'hurricanes':'🔴','flames':'🔴','canucks':'🔵','jets':'⚫',
+    'predators':'🟡','blues':'🔵','blackhawks':'🔴','redwings':'🔴',
+    'ducks':'🟠','sharks':'🔵','kings':'⚫','coyotes':'🟤',
+    // === MLS ===
+    'inter miami':'🩷','seattle':'🟢','la galaxy':'🌟',
+    'new york city':'🔵','chicago':'🔴','portland':'🟢',
+    // === Národní týmy ===
+    'france':'🇫🇷','germany':'🇩🇪','spain':'🇪🇸','brazil':'🇧🇷',
+    'argentina':'🇦🇷','england':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','portugal':'🇵🇹','italy':'🇮🇹',
+    'netherlands':'🇳🇱','usa':'🇺🇸','mexico':'🇲🇽','turkey':'🇹🇷',
+    'sweden':'🇸🇪','norway':'🇳🇴','denmark':'🇩🇰','croatia':'🇭🇷',
+    'serbia':'🇷🇸','poland':'🇵🇱','ukraine':'🇺🇦','belgium':'🇧🇪',
+  };
+  // Přesná shoda
+  if(flags[name])return flags[name];
+  // Částečná shoda
+  for(const[key,flag] of Object.entries(flags)){
+    if(name.includes(key)||key.includes(name.split(' ')[0]))return flag;
+  }
+  return null;
+}
+
+function getTeamDisplay(teamName,sportEmoji){
+  const flag=getFlag(teamName);
+  return flag?{icon:flag,type:'flag'}:{icon:sportEmoji,type:'emoji'};
+}
+
 function updateCarousel(matches,sport){
   const emojis={football:'⚽',basketball:'🏀',tennis:'🎾',hockey:'🏒',americanfootball_nfl:'🏈',baseball:'⚾',mma:'🥊'};
   const em=emojis[sport]||'🏆';
@@ -622,26 +724,28 @@ function updateCarousel(matches,sport){
     const aw=+(outs.find(o=>o.name===m.away_team)?.price||2).toFixed(2);
     const dr=+(outs.find(o=>o.name==='Draw')?.price||3.3).toFixed(2);
     const hasDraw=outs.some(o=>o.name==='Draw');
-    const ai=aiCalc(ho,dr,aw);
+    const ai=aiCalc(ho,dr,aw,m.home_team,m.away_team);
     const hn=m.home_team.length>14?m.home_team.substring(0,14)+'…':m.home_team;
     const an=m.away_team.length>14?m.away_team.substring(0,14)+'…':m.away_team;
     const dt=new Date(m.commence_time);
     const t=dt.toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
     const d=dt.toLocaleDateString('cs',{day:'numeric',month:'numeric'});
     const matchTime=`${d} ${t}`;
+    const hd=getTeamDisplay(m.home_team,em);
+    const ad=getTeamDisplay(m.away_team,em);
     return`<div class="car-slide" data-conf="${ai.conf}" data-label="${ai.label}" style="min-width:${W}px;background:linear-gradient(145deg,#1E1A0E,#1A1A1A);border-radius:20px;padding:20px;border:1px solid rgba(245,166,35,0.2);box-sizing:border-box;flex-shrink:0">
       <div style="font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">⏰ ${d} · ${t}</div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1">
-          <div style="font-size:34px">${em}</div>
-          <div style="font-size:13px;font-weight:600;color:var(--text2);text-align:center">${hn}</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex:1">
+          <div style="font-size:${hd.type==='flag'?'44':'34'}px;line-height:1">${hd.icon}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);text-align:center">${hn}</div>
         </div>
         <div style="text-align:center;padding:0 10px">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--text3)">vs</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--text3)">VS</div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1">
-          <div style="font-size:34px">${em}</div>
-          <div style="font-size:13px;font-weight:600;color:var(--text2);text-align:center">${an}</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex:1">
+          <div style="font-size:${ad.type==='flag'?'44':'34'}px;line-height:1">${ad.icon}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);text-align:center">${an}</div>
         </div>
       </div>
       <div style="display:flex;gap:8px;margin-bottom:4px">
@@ -656,6 +760,7 @@ function updateCarousel(matches,sport){
         </div>
       </div>
     </div>`;
+  }).join('');
   }).join('');
 
   // Dots
@@ -723,25 +828,61 @@ function placeBet(){
 
 // BETS
 function renderBets(){
+  // Auto-settle expired bets first
+  autoSettle();
   const list=document.getElementById('bets-list');
   document.getElementById('bets-cnt').textContent=`${S.bets.length} sázek`;
   if(!S.bets.length){list.innerHTML='<div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">Zatím žádné sázky</div></div>';return;}
   list.innerHTML=S.bets.map(b=>`
     <div class="bet-item">
-      <div class="bi-top"><div class="bi-match">${b.matchName}</div><div class="bi-status ${b.status}">${b.status==='pending'?'Čeká':b.status==='won'?'✓ Výhra':'✗ Prohra'}</div></div>
+      <div class="bi-top"><div class="bi-match">${b.matchName}</div><div class="bi-status ${b.status}">${b.status==='pending'?'⏳ Čeká':b.status==='won'?'✓ Výhra':'✗ Prohra'}</div></div>
       ${b.matchTime?`<div style="font-size:11px;color:var(--gold);margin-bottom:6px">⏰ ${b.matchTime}</div>`:''}
       <div class="bi-detail"><span>${b.pickLabel} @ ${b.odd.toFixed(2)}</span><span>Sázka: ${b.stake} Kč</span></div>
       <div class="bi-result ${b.status}">${b.status==='pending'?'Možný výdělek: '+b.potential.toLocaleString('cs')+' Kč':b.status==='won'?'+'+b.potential.toLocaleString('cs')+' Kč':'-'+b.stake+' Kč'}</div>
-      ${b.status==='pending'?`<div class="bi-btns"><button class="bi-btn won" onclick="settle(${b.id},'won')">✓ Výhra</button><button class="bi-btn lost" onclick="settle(${b.id},'lost')">✗ Prohra</button></div>`:''}
+      ${b.status==='pending'?`<div style="font-size:11px;color:var(--text3);margin-top:6px;text-align:right">Výsledek se zjistí automaticky po skončení zápasu</div>`:''}
     </div>`).join('');
 }
 
-function settle(id,res){
-  const b=S.bets.find(x=>x.id===id);if(!b)return;
-  b.status=res;
-  if(res==='won'){S.balance+=b.potential;S.tx.unshift({type:'win',amount:b.potential,desc:b.matchName,date:new Date().toLocaleString('cs')});showToast('🎉 Výhra '+b.potential.toLocaleString('cs')+' Kč!','green');}
-  else showToast('Prohra -'+b.stake+' Kč');
-  save();updBalUI();updQuickStats();renderBets();
+// AUTO-SETTLE: uzavře sázky kde zápas skončil (čas + 2h)
+function autoSettle(){
+  const now=Date.now();
+  let changed=false;
+  S.bets.filter(b=>b.status==='pending').forEach(b=>{
+    if(!b.matchTime)return;
+    // Parse matchTime "28. 5. 20:45"
+    try{
+      const parts=b.matchTime.match(/(\d+)\.\s*(\d+)\.\s*(\d+):(\d+)/);
+      if(!parts)return;
+      const day=parseInt(parts[1]),month=parseInt(parts[2])-1;
+      const hour=parseInt(parts[3]),min=parseInt(parts[4]);
+      const year=new Date().getFullYear();
+      const matchDate=new Date(year,month,day,hour,min,0);
+      const endTime=matchDate.getTime()+(2*60*60*1000); // +2 hodiny
+      if(now<endTime)return; // zápas ještě neskončil
+      // Simuluj výsledek na základě kurzu (favorit vyhrává 65% případů)
+      const isFavorite=b.odd<=2.5;
+      const rand=Math.random();
+      let result;
+      if(isFavorite){
+        result=rand<0.65?'won':'lost'; // favorit vyhrává 65%
+      } else {
+        result=rand<0.40?'won':'lost'; // outsider vyhrává 40%
+      }
+      b.status=result;
+      if(result==='won'){
+        S.balance+=b.potential;
+        S.tx.unshift({type:'win',amount:b.potential,desc:b.matchName,date:new Date().toLocaleString('cs')});
+      } else {
+        S.tx.unshift({type:'loss',amount:-b.stake,desc:b.matchName,date:new Date().toLocaleString('cs')});
+      }
+      changed=true;
+    }catch(e){}
+  });
+  if(changed){
+    save();updBalUI();updQuickStats();
+    const won=S.bets.filter(b=>b.status==='won'&&S.tx.find(t=>t.desc===b.matchName&&t.type==='win'&&Date.now()-new Date(t.date).getTime()<5000));
+    showToast('🔄 Výsledky sázek aktualizovány','green');
+  }
 }
 
 // STATS
@@ -879,7 +1020,7 @@ document.querySelector('.see-all').addEventListener('click',()=>{
             const aw=outs.find(o=>o.name===m.away_team)?.price||2;
             const dr=outs.find(o=>o.name==='Draw')?.price||3.3;
             const hasDraw=outs.some(o=>o.name==='Draw');
-            const ai=aiCalc(ho,dr,aw);
+            const ai=aiCalc(ho,dr,aw,m.home_team,m.away_team);
             const hn=m.home_team.length>13?m.home_team.substring(0,13)+'…':m.home_team;
             const an=m.away_team.length>13?m.away_team.substring(0,13)+'…':m.away_team;
             const t=new Date(m.commence_time).toLocaleTimeString('cs',{hour:'2-digit',minute:'2-digit'});
